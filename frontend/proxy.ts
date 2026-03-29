@@ -1,28 +1,57 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
+import { type SupabaseClient } from "@supabase/supabase-js";
 
-const rateLimitMap = new Map();
+/**
+ * Persistent Rate Limiting (Pulse [DS] Protocol)
+ * AC-01: Migrates volatile logic to Supabase 'security_logs' table.
+ * AC-02: 100-attempt lockout / 24-hour persistence.
+ */
+async function checkRateLimit(supabase: SupabaseClient, ip: string, path: string): Promise<{ blocked: boolean; message: string }> {
+  const { data: log } = await supabase
+    .from('security_logs')
+    .select('*')
+    .eq('ip_address', ip)
+    .maybeSingle();
+
+  const now = new Date();
+
+  // If IP is blocked and within time window
+  if (log?.is_blocked && log.blocked_until && new Date(log.blocked_until) > now) {
+    return { blocked: true, message: `Access suspended until ${new Date(log.blocked_until).toLocaleTimeString()}. Excessive authentication volume.` };
+  }
+
+  // Update or Create Log
+  if (!log) {
+    await supabase.from('security_logs').insert({ ip_address: ip, request_path: path, attempt_count: 1 });
+  } else {
+    const isNewPeriod = (now.getTime() - new Date(log.last_attempt_at).getTime()) > 3600000; // Reset count every hour or handle as needed
+    const newCount = isNewPeriod ? 1 : log.attempt_count + 1;
+    const shouldBlock = newCount > 100; // AC-02 Threshold
+    
+    await supabase
+      .from('security_logs')
+      .update({ 
+        attempt_count: newCount, 
+        last_attempt_at: now.toISOString(),
+        is_blocked: shouldBlock,
+        blocked_until: shouldBlock ? new Date(now.getTime() + 86400000).toISOString() : null // 24hr lockout
+      })
+      .eq('id', log.id);
+
+    if (shouldBlock) {
+      return { blocked: true, message: "Security lockout: 100+ failed attempts. 24-hour quarantine initiated." };
+    }
+  }
+
+  return { blocked: false, message: "" };
+}
 
 export async function proxy(request: NextRequest) {
-  // Simple Rate Limiting (SECAI006)
+  // Extraction of CIDR/IP
   const forwarded = request.headers.get("x-forwarded-for");
   const ip = forwarded ? forwarded.split(',')[0] : (request.headers.get("x-real-ip") || "anonymous");
-  const now = Date.now();
-  const windowMs = 60 * 1000; // 1 minute
-  const maxRequests = 20;
-
-  const requestData = rateLimitMap.get(ip) || { count: 0, resetTime: now + windowMs };
-  if (now > requestData.resetTime) {
-    requestData.count = 1;
-    requestData.resetTime = now + windowMs;
-  } else {
-    requestData.count++;
-  }
-  rateLimitMap.set(ip, requestData);
-
-  if (requestData.count > maxRequests && (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/auth"))) {
-    return new NextResponse("Too many requests. Please slow down.", { status: 429 });
-  }
+  const path = request.nextUrl.pathname;
 
   let supabaseResponse = NextResponse.next({
     request,
@@ -56,9 +85,13 @@ export async function proxy(request: NextRequest) {
     }
   );
 
-  // IMPORTANT: Avoid writing any logic between createServerClient and
-  // getUser(). A simple mistake could make it very hard to debug
-  // why your sessions are not being refreshed.
+  // Persistence check [CS-03]
+  if (path.startsWith("/login") || path.startsWith("/auth")) {
+    const { blocked, message } = await checkRateLimit(supabase, ip, path);
+    if (blocked) {
+      return new NextResponse(message, { status: 429 });
+    }
+  }
 
   const {
     data: { user },

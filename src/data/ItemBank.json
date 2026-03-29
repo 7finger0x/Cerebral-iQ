@@ -5,7 +5,12 @@
     { "id": "gf3", "type": "letter_series", "stem": "B, E, H, K, N, ___", "options": ["P", "Q", "R", "S"], "answer": "Q", "difficulty": "medium" },
     { "id": "gf4", "type": "analogy", "stem": "Safe is to danger as dry is to ___", "options": ["wet", "water", "rain", "desert"], "answer": "wet", "difficulty": "hard" },
     { "id": "gf5", "type": "syllogism", "stem": "All musicians enjoy listening to music. Some people who enjoy listening to music are dancers. Which conclusion is definitely true?", "options": ["All dancers are musicians", "Some musicians are dancers", "No dancers are musicians", "Some dancers enjoy listening to music"], "answer": "Some dancers enjoy listening to music", "difficulty": "hard" },
-    { "id": "gf6", "type": "analogy_abstract", "stem": "SAFE : DANGER :: IMMUNE : ___", "options": ["illness", "health", "medicine", "hospital"], "answer": "illness", "difficulty": "hard" }
+    { "id": "gf6", "type": "analogy_abstract", "stem": "SAFE : DANGER :: IMMUNE : ___", "options": ["illness", "health", "medicine", "hospital"], "answer": "illness", "difficulty": "hard" },
+    { "id": "gf7", "type": "series_interleaved", "stem": "1, A, 3, C, 6, F, 10, __", "options": ["J", "K", "I", "L"], "answer": "J", "difficulty": "expert" },
+    { "id": "gf8", "type": "series_nested", "stem": "2, 3, 5, 9, 17, 33, __", "options": ["64", "65", "66", "67"], "answer": "65", "difficulty": "expert" },
+    { "id": "gf9", "type": "analogy_expert", "stem": "STABLE : HORSE :: ___ : PRISONER", "options": ["CELL", "CAGE", "ROOM", "BASEMENT"], "answer": "CELL", "difficulty": "expert" },
+    { "id": "gf10", "type": "matrix_induction", "stem": "[Circle in Square] -> [Square in Circle] :: [Triangle in Hexagon] -> ___", "options": ["Hexagon in Triangle", "Star in Circle", "Triangle in Triangle", "Circle in Star"], "answer": "Hexagon in Triangle", "difficulty": "expert" },
+    { "id": "gf11", "type": "logic_conditional", "stem": "If some A are B and all B are C, then...", "options": ["Some A are C", "All A are C", "No A are C", "Some C are not A"], "answer": "Some A are C", "difficulty": "expert" }
   ],
   "gc_verbal_knowledge": [
     { "id": "gc1", "word": "Large", "expected": ["big", "huge", "not small"], "difficulty": "easy" },
@@ -37,7 +42,12 @@
     { "id": "gfq1", "type": "arithmetic", "stem": "If 15 apples cost $3.00, how much does each apple cost?", "options": ["15 cents", "20 cents", "25 cents", "30 cents"], "answer": "20 cents", "difficulty": "easy" },
     { "id": "gfq2", "type": "logic", "stem": "John is 12 and 3x as old as his brother. How old will John be when he is 2x as old as his brother?", "options": ["14", "16", "18", "20"], "answer": "16", "difficulty": "medium" },
     { "id": "gfq3", "type": "proportionality", "stem": "If it takes 31 minutes to bake 2 cakes, how many minutes will it take for 12 cakes?", "options": ["124", "155", "186", "217"], "answer": "186", "difficulty": "hard" },
-    { "id": "gfq4", "type": "sets", "stem": "12 members at a conference shake hands with everyone else once. How many total handshakes occur?", "options": ["66", "72", "132", "144"], "answer": "66", "difficulty": "expert" }
+    { "id": "gfq4", "type": "sets", "stem": "12 members at a conference shake hands with everyone else once. How many total handshakes occur?", "options": ["66", "72", "132", "144"], "answer": "66", "difficulty": "expert" },
+    { "id": "gfq5", "type": "proportionality", "stem": "A pump fills a 500L tank in 40 mins. How many mins for 3 pumps to fill 1500L?", "options": ["20", "40", "60", "120"], "answer": "40", "difficulty": "hard" },
+    { "id": "gfq6", "type": "sets_v2", "stem": "In a group of 30, 18 play chess, 12 play poker, 5 play both. How many play neither?", "options": ["0", "5", "10", "15"], "answer": "5", "difficulty": "hard" },
+    { "id": "gfq7", "type": "sequence_sum", "stem": "The sum of three consecutive integers is 72. What is the largest of these integers?", "options": ["23", "24", "25", "26"], "answer": "25", "difficulty": "hard" },
+    { "id": "gfq8", "type": "velocity_chase", "stem": "Car A travels at 60km/h starting at 12PM. Car B travels at 80km/h starting at 1PM. At what time does B catch A?", "options": ["3PM", "4PM", "5PM", "6PM"], "answer": "4PM", "difficulty": "hard" },
+    { "id": "gfq9", "type": "probability_dice", "stem": "What is the probability of rolling a sum of 7 with two fair 6-sided dice?", "options": ["1/12", "1/6", "1/4", "5/36"], "answer": "1/6", "difficulty": "hard" }
   ],
   "gc_information": [
     { "id": "info1", "stem": "On what continent is Bolivia located?", "options": ["Africa", "Asia", "South America", "Europe"], "answer": "South America", "difficulty": "easy" },

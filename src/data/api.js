@@ -4,24 +4,39 @@ import ItemBank from './ItemBank.json';
 // In Phase 3, this file centralizes data fetching.
 // If the DB is fully connected, we pull items. For now we simulate an async fetch from the DB.
 
+/**
+ * Adaptive Item Fetcher (CS-04 Protocol)
+ * AC-01: Global Supabase Vault fetch.
+ * AC-02: Local JSON Fallback (ItemBank.json).
+ */
 export async function fetchItemsForDomain(domainKey) {
   try {
-    // Removed artificial delay per IDE warnings
-    await Promise.resolve();
+    // 1. Supabase Query Attempt (Production Vault)
+    const { data: dbItems, error } = await supabase
+      .from('assessment_items')
+      .select('*')
+      .or(`domain.eq.${domainKey},subtest.eq.${domainKey}`)
+      .eq('is_active', true);
 
-    // Mock API call using Supabase structure:
-    // const { data, error } = await supabase.from('item_bank').select('*').eq('domain', domainKey);
-    // if (error) throw error;
-    // return data;
+    if (!error && dbItems && dbItems.length > 0) {
+      // Data-Transformation: Unroll 'content' jsonb back to top-level attributes [clinical-sync]
+      return dbItems.map(item => ({
+        id: item.id,
+        difficulty: item.difficulty,
+        type: item.task_type,
+        ...item.content
+      }));
+    }
 
-    // For local MVP fallback:
+    // 2. Local Fallback (Development/Offline Persistence)
     if (Object.keys(ItemBank).includes(domainKey)) {
       return ItemBank[domainKey];
-    } else {
-      throw new Error(`Domain ${domainKey} not found in database.`);
     }
+
+    throw new Error(`Domain ${domainKey} not found in database or fallback.`);
   } catch (error) {
-    return [];
+    // Silent fail over to empty or fallback on critical error
+    return ItemBank[domainKey] || [];
   }
 }
 

@@ -17,10 +17,15 @@ export class CerebralEngine {
     };
   }
 
-  calculateZ(raw, domain) {
+  calculateZ(raw, domain, difficulty = 'medium') {
     if (!this.norms[domain]) return 0;
     const { mean, sd } = this.norms[domain];
-    return (raw - mean) / sd;
+    
+    // Difficulty Multiplier Map
+    const weights = { easy: 0.8, medium: 1.0, hard: 1.25, expert: 1.6 };
+    const weight = weights[difficulty] || 1.0;
+    
+    return ((raw - mean) / sd) * weight;
   }
 
   getScaledScore(z) {
@@ -92,12 +97,17 @@ export class AdaptiveSession {
     if (isCorrect) {
       this.consecutiveFailures = 0;
       this.consecutiveSuccesses += 1;
-      this.score += 1; // Basic raw score accumulation
+      
+      // Weighted scoring based on difficulty
+      const item = this.getCurrentItem();
+      const weights = { easy: 0.5, medium: 1.0, hard: 1.5, expert: 2.0 };
+      const weight = weights[item?.difficulty] || 1.0;
+      this.score += weight; 
 
       if (this.consecutiveSuccesses >= this.basalThreshold && !this.basalEstablished) {
         this.basalEstablished = true;
-        // Credit for all items before the basal if we started late
-        this.score += this.currentIndex - this.history.length + 1; 
+        // Credit for all items before the basal if we started late (assumes medium difficulty for skipped items)
+        this.score += (this.currentIndex - this.history.length + 1) * 1.0; 
       }
     } else {
       this.consecutiveSuccesses = 0;
