@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Brain, Shield, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '../lib/supabase';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -56,14 +56,14 @@ export default function LoginPage() {
 
         <form onSubmit={handleLogin} className="space-y-6">
           <div className="space-y-2">
-            <label className="text-[10px] text-slate-500 font-bold uppercase ml-2 tracking-widest">Email Identity</label>
+            <label className="text-[10px] text-slate-500 font-bold uppercase ml-2 tracking-widest">Email</label>
             <div className="relative group">
               <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-primary transition-colors" />
               <input 
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="CIQ_AUTH_IDENTIFIER"
+                placeholder="Email Address"
                 className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-sm focus:border-primary/50 focus:bg-white/10 outline-none transition-all"
                 required
               />
@@ -71,14 +71,14 @@ export default function LoginPage() {
           </div>
 
           <div className="space-y-2">
-             <label className="text-[10px] text-slate-500 font-bold uppercase ml-2 tracking-widest">Secure Credentials</label>
+             <label className="text-[10px] text-slate-500 font-bold uppercase ml-2 tracking-widest">Secret</label>
              <div className="relative group">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 group-focus-within:text-primary transition-colors" />
                 <input 
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="CIQ_SECRET_TOKEN"
+                  placeholder="Access Code"
                   className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-sm focus:border-primary/50 focus:bg-white/10 outline-none transition-all"
                   required
                 />

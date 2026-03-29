@@ -1,5 +1,5 @@
-import { supabase } from '../lib/supabaseClient';
-import ItemBank from './ItemBank.json';
+import { supabase } from '../lib/supabaseClient.js';
+import ItemBank from './ItemBank.json' with { type: 'json' };
 
 // In Phase 3, this file centralizes data fetching.
 // If the DB is fully connected, we pull items. For now we simulate an async fetch from the DB.

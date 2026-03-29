@@ -15,8 +15,8 @@ class GSTimer {
 
   private constructor() {
     this.profile = null;
-    const _init = performance.now(); // Baseline initialization marker
-    return; // Explicit return to signal intent
+    // Clinical-Audit: Record singleton initialization delta for performance baseline
+    console.debug(`[CiQ.GSTimer] Precision Clock Synced at ${performance.now()} ms.`);
   }
 
   public static getInstance(): GSTimer {

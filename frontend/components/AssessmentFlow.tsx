@@ -8,8 +8,8 @@ import {
 } from 'lucide-react';
 
 import MatrixRenderer from './MatrixRenderer';
-import { engineApi, Item, AssessmentResponse } from '@/lib/api';
-import { logger } from '@/lib/logger';
+import { engineApi, Item, AssessmentResponse } from '../lib/api';
+import { logger } from '../lib/logger';
 
 interface AssessmentFlowProps {
   onComplete: (results: { iq: number; classification: string; subtests: Record<string, number> }) => void;

@@ -3,10 +3,10 @@
 import React from 'react';
 import { Orbitron, Inter } from 'next/font/google';
 import { Shield, Zap, Target, BarChart3, ChevronRight } from 'lucide-react';
-import MatrixHook from '@/components/MatrixHook';
-import AssessmentFlow from '@/components/AssessmentFlow';
+import MatrixHook from '../components/MatrixHook';
+import AssessmentFlow from '../components/AssessmentFlow';
 import { useRouter } from 'next/navigation';
-import { logger } from '@/lib/logger';
+import { logger } from '../lib/logger';
 
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' });
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
