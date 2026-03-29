@@ -10,10 +10,20 @@ import {
 import MatrixRenderer from './MatrixRenderer';
 import { engineApi, Item, AssessmentResponse } from '../lib/api';
 import { logger } from '../lib/logger';
+import { supabase } from '../lib/supabase';
 import { useHighPrecisionTimer } from '../hooks/useHighPrecisionTimer';
 
 // Visual Cell component for high-fidelity item presentation
-const VisualOption = ({ index, onClick, disabled, type, transform, active }: any) => (
+interface VisualOptionProps {
+  index: number;
+  onClick: () => void;
+  disabled: boolean;
+  type: string;
+  transform?: number;
+  active?: boolean;
+}
+
+const VisualOption: React.FC<VisualOptionProps> = ({ index, onClick, disabled, type, transform, active }) => (
   <motion.button
     whileHover={{ scale: 1.05, borderColor: 'rgba(99, 102, 241, 0.5)' }}
     whileTap={{ scale: 0.95 }}
@@ -54,9 +64,6 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
   // High Precision timing for Processing Speed (Gs) domains
   const timer = useHighPrecisionTimer();
 
-  // Reference for the current item start to ensure no race conditions
-  const itemStartTimeRef = React.useRef<number>(0);
-
   // Target length for stable SEM
   const TARGET_ITEMS = 20;
 
@@ -94,7 +101,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
         logger.info(`[Timer] Started precision pulse for ${currentQuestion.id}`);
       }
     }
-  }, [currentQuestion?.id, step, loading, timer]);
+  }, [currentQuestion, step, loading, timer]);
 
   const handleAnswer = async (responseValue: number) => {
     if (!currentQuestion) return;
@@ -144,7 +151,9 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
 
   const finalizeScore = async (finalTheta: number) => {
     try {
-      const results = await engineApi.finalizeScore(sessionId, finalTheta);
+      // Fetch authenticated user ID if exists
+      const { data: { user } } = await supabase.auth.getUser();
+      const results = await engineApi.finalizeScore(sessionId, finalTheta, user?.id);
       onComplete(results);
     } catch (error) {
       logger.error('Error finalizing score:', error);

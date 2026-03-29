@@ -66,11 +66,8 @@ async def start_assessment():
             "latencies": []
         }
         with httpx.Client() as client:
-            response = client.post(url, headers=DEFAULT_HEADERS, json=payload)
-            response.raise_for_status()
-            
-            # Fetch the generated ID (using Prefer: return=representation)
             res_full = client.post(url, headers={**DEFAULT_HEADERS, "Prefer": "return=representation"}, json=payload)
+            res_full.raise_for_status()
             session_data = res_full.json()[0]
             session_id = session_data["id"]
         
@@ -132,7 +129,7 @@ async def submit_answer(data: AnswerSubmission):
     }
 
 @app.get("/assessment/finalize/{session_id}/{theta}")
-async def finalize_score(session_id: str, theta: float):
+async def finalize_score(session_id: str, theta: float, user_id: Optional[str] = None):
     # Fetch session to get latencies/domains
     try:
         url = f"{supabase_url}/rest/v1/sessions?id=eq.{session_id}"
@@ -143,8 +140,13 @@ async def finalize_score(session_id: str, theta: float):
     except Exception:
         raise HTTPException(status_code=404, detail="Session not found for finalization")
 
-    # Get domains for items in history
-    domains = [ITEM_BANK[idx]["domain"] for idx in session["history"]]
+    # Get domains for items in history (with bounds safety)
+    domains = []
+    for idx in session["history"]:
+        if 0 <= idx < len(ITEM_BANK):
+            domains.append(ITEM_BANK[idx]["domain"])
+        else:
+            domains.append("unknown")
     
     # Calculate Gs Metrics [CS-08]
     gs_metrics = calculate_gs_metrics(session["responses"], session["latencies"], domains)
@@ -158,9 +160,10 @@ async def finalize_score(session_id: str, theta: float):
     try:
         url = f"{supabase_url}/rest/v1/profiles"
         payload = {
+            "user_id": user_id,
             "full_scale_iq": iq_data["iq"],
             "classification": iq_data["classification"],
-            "gf_score": iq_data["iq"] - 2, # Example: deriving sub-scores from theta/domain
+            "gf_score": iq_data["iq"] - 2, 
             "gs_score": gs_metrics["gs_score"],
             "gwm_score": iq_data["iq"] + 1,
             "created_at": "now()"

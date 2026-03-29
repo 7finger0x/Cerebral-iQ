@@ -64,9 +64,12 @@ export const engineApi = {
     }
   },
 
-  finalizeScore: async (sessionId: string, theta: number) => {
+  finalizeScore: async (sessionId: string, theta: number, userId?: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/assessment/finalize/${sessionId}/${theta}`, {
+      const url = new URL(`${API_BASE_URL}/assessment/finalize/${sessionId}/${theta}`);
+      if (userId) url.searchParams.append('user_id', userId);
+      
+      const res = await fetch(url.toString(), {
         method: 'GET',
       });
       if (!res.ok) {
