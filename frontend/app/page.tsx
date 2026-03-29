@@ -1,15 +1,32 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { Orbitron, Inter } from 'next/font/google';
-import { Shield, Zap, Target, BarChart3, ChevronRight, CheckCircle2 } from 'lucide-react';
+import { Shield, Zap, Target, BarChart3, ChevronRight } from 'lucide-react';
 import MatrixHook from '@/components/MatrixHook';
+import AssessmentFlow from '@/components/AssessmentFlow';
+import { useRouter } from 'next/navigation';
 
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' });
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
 export default function LandingPage() {
+  const [showAssessment, setShowAssessment] = React.useState(false);
+  const router = useRouter();
+
+  if (showAssessment) {
+    return (
+      <div className={`${inter.className} ${orbitron.variable} min-h-screen bg-background text-white selection:bg-primary/30 flex items-center justify-center`}>
+        <AssessmentFlow 
+          onComplete={(results) => {
+            console.log('Assessment Complete:', results);
+            router.push('/dashboard');
+          }}
+          onCancel={() => setShowAssessment(false)}
+        />
+      </div>
+    );
+  }
   return (
     <div className={`${inter.className} ${orbitron.variable} min-h-screen bg-background text-white selection:bg-primary/30`}>
       {/* Navigation */}
@@ -26,7 +43,10 @@ export default function LandingPage() {
             <a href="#methodology" className="hover:text-primary transition-colors">Methodology</a>
             <a href="#pricing" className="hover:text-primary transition-colors">Enterprise</a>
           </div>
-          <button className="bg-white text-background px-5 py-2 rounded-full text-sm font-bold hover:bg-primary hover:text-white transition-all">
+          <button 
+            onClick={() => setShowAssessment(true)}
+            className="bg-white text-background px-5 py-2 rounded-full text-sm font-bold hover:bg-primary hover:text-white transition-all"
+          >
             Get Started
           </button>
         </div>
@@ -51,7 +71,10 @@ export default function LandingPage() {
               </p>
               
               <div className="flex flex-wrap gap-4 pt-4">
-                <button className="bg-primary hover:bg-primary-light text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-2 shadow-2xl shadow-primary/20 transition-all group">
+                <button 
+                  onClick={() => setShowAssessment(true)}
+                  className="bg-primary hover:bg-primary-light text-white px-8 py-4 rounded-2xl font-bold text-lg flex items-center gap-2 shadow-2xl shadow-primary/20 transition-all group"
+                >
                   Start Assessment
                   <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
