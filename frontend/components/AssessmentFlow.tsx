@@ -12,6 +12,31 @@ import { engineApi, Item, AssessmentResponse } from '../lib/api';
 import { logger } from '../lib/logger';
 import { useHighPrecisionTimer } from '../hooks/useHighPrecisionTimer';
 
+// Visual Cell component for high-fidelity item presentation
+const VisualOption = ({ index, onClick, disabled, type, transform, active }: any) => (
+  <motion.button
+    whileHover={{ scale: 1.05, borderColor: 'rgba(99, 102, 241, 0.5)' }}
+    whileTap={{ scale: 0.95 }}
+    onClick={onClick}
+    disabled={disabled}
+    className={`
+      h-24 w-full rounded-2xl border flex items-center justify-center transition-all bg-white/5
+      ${active ? 'border-primary ring-2 ring-primary/20 bg-primary/10' : 'border-white/10'}
+    `}
+  >
+    <div className="flex flex-col items-center gap-2">
+      <svg viewBox="0 0 100 100" className="w-10 h-10">
+        <g transform={`rotate(${transform || 0} 50 50)`}>
+          {type === 'circle' && <circle cx="50" cy="50" r="35" fill="none" stroke="currentColor" strokeWidth="4" className="text-primary" />}
+          {type === 'square' && <rect x="20" y="20" width="60" height="60" fill="none" stroke="currentColor" strokeWidth="4" className="text-indigo-400" />}
+          {type === 'triangle' && <path d="M50 15 L85 75 L15 75 Z" fill="none" stroke="currentColor" strokeWidth="4" className="text-emerald-400" />}
+        </g>
+      </svg>
+      <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">Option {index + 1}</span>
+    </div>
+  </motion.button>
+);
+
 interface AssessmentFlowProps {
   onComplete: (results: { iq: number; classification: string; subtests: Record<string, number> }) => void;
   onCancel: () => void;
@@ -226,16 +251,22 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
                   )}
                 </div>
 
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-md">
-                   {[1, 2, 3, 4].map(idx => (
-                     <button
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-2xl">
+                   {/* Simplified mock options for the Gf matrix demo */}
+                   {[
+                     { type: 'triangle', transform: 90 }, // Correct answer for mock
+                     { type: 'circle', transform: 0 },
+                     { type: 'square', transform: 45 },
+                     { type: 'triangle', transform: 0 }
+                   ].map((opt, idx) => (
+                     <VisualOption
                         key={`opt-${idx}`}
-                        onClick={() => handleAnswer(idx === 1 ? 1 : 0)}
-                        className="h-16 rounded-xl border border-white/10 hover:border-primary/50 hover:bg-primary/5 transition-all font-bold text-lg"
+                        index={idx}
+                        type={opt.type}
+                        transform={opt.transform}
+                        onClick={() => handleAnswer(idx === 0 ? 1 : 0)}
                         disabled={loading}
-                     >
-                       Option {idx}
-                     </button>
+                     />
                    ))}
                 </div>
               </div>
