@@ -7,10 +7,12 @@ import {
   ArrowLeft, CheckCircle2, Loader2 
 } from 'lucide-react';
 
+import MatrixRenderer from './MatrixRenderer';
 import { engineApi, Item, AssessmentResponse } from '@/lib/api';
+import { logger } from '@/lib/logger';
 
 interface AssessmentFlowProps {
-  onComplete: (results: { iq: number; classification: string; results: Record<string, any>[] }) => void;
+  onComplete: (results: { iq: number; classification: string; subtests: Record<string, number> }) => void;
   onCancel: () => void;
 }
 
@@ -34,7 +36,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
       setCurrentQuestion(data.first_item);
       setStep('testing');
     } catch (error) {
-      console.error('Error starting session:', error);
+      logger.error('Error starting session:', error);
       // Fallback for demo
       setCurrentQuestion({
         id: 'gf_m_001', 
@@ -78,7 +80,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
         setLoading(false);
       }
     } catch (error) {
-      console.error('Error submitting answer:', error);
+      logger.error('Error submitting answer:', error);
       // Fallback behavior
       if (updatedHistory.length >= 10) {
         setStep('scoring');
@@ -94,8 +96,8 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
       const results = await engineApi.finalizeScore(finalTheta);
       onComplete(results);
     } catch (error) {
-      console.error('Error finalizing score:', error);
-      onComplete({ iq: 100, classification: 'Average', results: [] });
+      logger.error('Error finalizing score:', error);
+      onComplete({ iq: 100, classification: 'Average', subtests: {} });
     }
   };
 
@@ -187,15 +189,21 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
               <div className="text-center space-y-12">
                 <h3 className="text-2xl font-semibold opacity-90">{currentQuestion.content}</h3>
                 
-                {/* Mock Item Presentation */}
-                <div className="w-64 h-64 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-center text-slate-500 italic">
-                  [ Rendering Item: {currentQuestion.type} ]
+                {/* High Fidelity Item Presentation */}
+                <div className="flex items-center justify-center p-4">
+                  {currentQuestion.type === 'matrix' ? (
+                    <MatrixRenderer itemId={currentQuestion.id} />
+                  ) : (
+                    <div className="w-64 h-64 bg-white/5 rounded-2xl border border-white/5 flex items-center justify-center text-slate-500 italic">
+                      [ Rendering Item: {currentQuestion.type} ]
+                    </div>
+                  )}
                 </div>
 
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4 w-full max-w-md">
                    {[1, 2, 3, 4].map(idx => (
                      <button
-                        key={idx}
+                        key={`opt-${idx}`}
                         onClick={() => handleAnswer(idx === 1 ? 1 : 0)}
                         className="h-16 rounded-xl border border-white/10 hover:border-primary/50 hover:bg-primary/5 transition-all font-bold text-lg"
                         disabled={loading}

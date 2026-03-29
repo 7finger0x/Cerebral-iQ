@@ -1,7 +1,29 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
+const rateLimitMap = new Map();
+
 export async function proxy(request: NextRequest) {
+  // Simple Rate Limiting (SECAI006)
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(',')[0] : (request.headers.get("x-real-ip") || "anonymous");
+  const now = Date.now();
+  const windowMs = 60 * 1000; // 1 minute
+  const maxRequests = 20;
+
+  const requestData = rateLimitMap.get(ip) || { count: 0, resetTime: now + windowMs };
+  if (now > requestData.resetTime) {
+    requestData.count = 1;
+    requestData.resetTime = now + windowMs;
+  } else {
+    requestData.count++;
+  }
+  rateLimitMap.set(ip, requestData);
+
+  if (requestData.count > maxRequests && (request.nextUrl.pathname.startsWith("/login") || request.nextUrl.pathname.startsWith("/auth"))) {
+    return new NextResponse("Too many requests. Please slow down.", { status: 429 });
+  }
+
   let supabaseResponse = NextResponse.next({
     request,
   });

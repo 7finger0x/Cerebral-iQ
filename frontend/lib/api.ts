@@ -1,5 +1,7 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_ENGINE_URL || 'http://localhost:8000';
 
+import { logger } from './logger';
+
 export interface Item {
   id: string;
   item_idx: number;
@@ -32,7 +34,7 @@ export const engineApi = {
       }
       return await res.json();
     } catch (err) {
-      console.error('Engine Error (Start):', err);
+      logger.error('Engine Error (Start):', err);
       throw err;
     }
   },
@@ -56,7 +58,7 @@ export const engineApi = {
       }
       return await res.json();
     } catch (err) {
-      console.error('Engine Error (Submit):', err);
+      logger.error('Engine Error (Submit):', err);
       throw err;
     }
   },
@@ -72,7 +74,7 @@ export const engineApi = {
       }
       return await res.json();
     } catch (err) {
-      console.error('Engine Error (Finalize):', err);
+      logger.error('Engine Error (Finalize):', err);
       throw err;
     }
   }

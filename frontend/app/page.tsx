@@ -6,6 +6,7 @@ import { Shield, Zap, Target, BarChart3, ChevronRight } from 'lucide-react';
 import MatrixHook from '@/components/MatrixHook';
 import AssessmentFlow from '@/components/AssessmentFlow';
 import { useRouter } from 'next/navigation';
+import { logger } from '@/lib/logger';
 
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' });
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -19,7 +20,7 @@ export default function LandingPage() {
       <div className={`${inter.className} ${orbitron.variable} min-h-screen bg-background text-white selection:bg-primary/30 flex items-center justify-center`}>
         <AssessmentFlow 
           onComplete={(results) => {
-            console.log('Assessment Complete:', results);
+            logger.log('Assessment Complete:', results);
             router.push('/dashboard');
           }}
           onCancel={() => setShowAssessment(false)}
@@ -95,7 +96,7 @@ export default function LandingPage() {
 
             <div className="relative">
               <div className="absolute inset-0 bg-primary/20 blur-[100px] rounded-full" />
-              <MatrixHook onSolve={() => console.log('Solved!')} />
+              <MatrixHook onSolve={() => logger.log('Solved!')} />
             </div>
           </div>
         </section>

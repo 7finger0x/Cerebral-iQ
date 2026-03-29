@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Brain, Shield, User, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
+import { Brain, Shield, Mail, Lock, Loader2, ArrowRight } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
 
 export default function LoginPage() {
@@ -16,16 +16,22 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error: authError } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    try {
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (authError) {
-      setError(authError.message);
+      if (authError) {
+        setError(authError.message);
+        setLoading(false);
+      } else {
+        window.location.href = '/dashboard';
+      }
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'An unexpected authentication error occurred.';
+      setError(msg);
       setLoading(false);
-    } else {
-      window.location.href = '/dashboard';
     }
   };
 
@@ -57,7 +63,7 @@ export default function LoginPage() {
                 type="email" 
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="name@organization.com"
+                placeholder="CIQ_AUTH_IDENTIFIER"
                 className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-sm focus:border-primary/50 focus:bg-white/10 outline-none transition-all"
                 required
               />
@@ -72,7 +78,7 @@ export default function LoginPage() {
                   type="password" 
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••"
+                  placeholder="CIQ_SECRET_TOKEN"
                   className="w-full bg-white/5 border border-white/5 rounded-2xl py-4 pl-12 pr-6 text-sm focus:border-primary/50 focus:bg-white/10 outline-none transition-all"
                   required
                 />
