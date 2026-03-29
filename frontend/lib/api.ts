@@ -22,9 +22,12 @@ export interface AssessmentResponse {
 }
 
 export const engineApi = {
-  startSession: async () => {
+  startSession: async (userId?: string) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/assessment/start`, {
+      const url = new URL(`${API_BASE_URL}/assessment/start`);
+      if (userId) url.searchParams.append('user_id', userId);
+      
+      const res = await fetch(url.toString(), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
       });

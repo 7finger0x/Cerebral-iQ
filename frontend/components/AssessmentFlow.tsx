@@ -70,7 +70,8 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
   const startAssessment = async () => {
     setLoading(true);
     try {
-      const data = await engineApi.startSession();
+      const { data: { user } } = await supabase.auth.getUser();
+      const data = await engineApi.startSession(user?.id);
       setSessionId(data.session_id);
       setCurrentQuestion(data.first_item);
       setStep('testing');

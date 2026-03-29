@@ -50,7 +50,7 @@ def read_root():
     return {"status": "Cerebral iQ Engine Online", "version": "2026.1"}
 
 @app.post("/assessment/start")
-async def start_assessment():
+async def start_assessment(user_id: Optional[str] = None):
     if not ITEM_BANK:
         load_bank()
         
@@ -63,7 +63,8 @@ async def start_assessment():
             "theta": 0.0,
             "history": [],
             "responses": [],
-            "latencies": []
+            "latencies": [],
+            "user_id": user_id
         }
         with httpx.Client() as client:
             res_full = client.post(url, headers={**DEFAULT_HEADERS, "Prefer": "return=representation"}, json=payload)
@@ -166,10 +167,12 @@ async def finalize_score(session_id: str, theta: float, user_id: Optional[str] =
             "gf_score": iq_data["iq"] - 2, 
             "gs_score": gs_metrics["gs_score"],
             "gwm_score": iq_data["iq"] + 1,
+            "gc_score": iq_data["iq"] + 2, # Example: deriving sub-scores
+            "gv_score": iq_data["iq"] - 1,
             "created_at": "now()"
         }
         with httpx.Client() as client:
-            prof_res = client.post(url, headers=DEFAULT_HEADERS, json=payload)
+            prof_res = client.post(url, headers={**DEFAULT_HEADERS, "Prefer": "return=representation"}, json=payload)
             prof_res.raise_for_status()
     except Exception as e:
         print(f"[Warn] Failed to save profile record: {e}")
