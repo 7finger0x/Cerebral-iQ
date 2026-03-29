@@ -1,0 +1,48 @@
+{
+  "gf_reasoning_patterns": [
+    { "id": "gf1", "type": "series", "stem": "2, 4, 8, 16, ___", "options": ["24", "32", "64", "20"], "answer": "32", "difficulty": "easy" },
+    { "id": "gf2", "type": "series", "stem": "3, 6, 12, 21, 33, ___", "options": ["42", "45", "48", "51"], "answer": "48", "difficulty": "medium" },
+    { "id": "gf3", "type": "letter_series", "stem": "B, E, H, K, N, ___", "options": ["P", "Q", "R", "S"], "answer": "Q", "difficulty": "medium" },
+    { "id": "gf4", "type": "analogy", "stem": "Safe is to danger as dry is to ___", "options": ["wet", "water", "rain", "desert"], "answer": "wet", "difficulty": "hard" },
+    { "id": "gf5", "type": "syllogism", "stem": "All musicians enjoy listening to music. Some people who enjoy listening to music are dancers. Which conclusion is definitely true?", "options": ["All dancers are musicians", "Some musicians are dancers", "No dancers are musicians", "Some dancers enjoy listening to music"], "answer": "Some dancers enjoy listening to music", "difficulty": "hard" },
+    { "id": "gf6", "type": "analogy_abstract", "stem": "SAFE : DANGER :: IMMUNE : ___", "options": ["illness", "health", "medicine", "hospital"], "answer": "illness", "difficulty": "hard" }
+  ],
+  "gc_verbal_knowledge": [
+    { "id": "gc1", "word": "Large", "expected": ["big", "huge", "not small"], "difficulty": "easy" },
+    { "id": "gc2", "word": "Purchase", "expected": ["buy", "acquire", "pay for"], "difficulty": "medium" },
+    { "id": "gc3", "word": "Consequence", "expected": ["result", "effect", "outcome"], "difficulty": "hard" },
+    { "id": "gc4", "word": "Approximate", "expected": ["close", "estimate", "nearly exact"], "difficulty": "academic" },
+    { "id": "gc_sim1", "type": "similarity", "stem": "In what way are a spoon and a fork alike?", "expected": ["eating tools", "utensils", "silverware"], "difficulty": "concrete" },
+    { "id": "gc_sim2", "type": "similarity", "stem": "In what way are truth and honesty alike?", "expected": ["being real", "morality", "not lying"], "difficulty": "abstract" },
+    { "id": "gc_sim3", "type": "similarity", "stem": "How are rules and laws alike?", "expected": ["guidelines", "tell people what to do", "regulations"], "difficulty": "abstract" }
+  ],
+  "gwm_number_sequence": [
+    { "id": "wm_f1", "type": "forward", "sequence": [3, 8], "difficulty": "easy" },
+    { "id": "wm_f2", "type": "forward", "sequence": [7, 2, 9, 4, 6, 1], "difficulty": "hard" },
+    { "id": "wm_f3", "type": "forward", "sequence": [5, 1, 9, 4, 8, 2, 7], "difficulty": "harder" },
+    { "id": "wm_b1", "type": "backward", "sequence": [4, 9], "answer": [9, 4], "difficulty": "easy" },
+    { "id": "wm_b2", "type": "backward", "sequence": [2, 7, 5, 9], "answer": [9, 5, 7, 2], "difficulty": "medium" },
+    { "id": "wm_seq1", "type": "sequencing", "sequence": [8, 3, 7], "answer": [3, 7, 8], "difficulty": "hard" }
+  ],
+  "gs_speed_coding": [
+    { "id": "gs_sym", "type": "symbol_search", "targets": ["○", "△"], "row": ["□", "◇", "○", "☆", "X"], "answer": "YES" },
+    { "id": "gs_sym2", "type": "symbol_search", "targets": ["+", "★"], "row": ["-", "=", "/", "v", ">"], "answer": "NO" }
+  ],
+  "gv_visual_patterns": [
+    { "id": "gv1", "type": "rotation", "stem": "Which shape below is a rotated version of the target?", "target": "◩", "options": ["◪", "◧", "◨", "◩"], "answer": "◩", "difficulty": "easy" },
+    { "id": "gv2", "type": "synthesis", "stem": "If you combined these two shapes, what would form?", "target": "△ + ▽", "options": ["◇", "□", "○", "☆"], "answer": "◇", "difficulty": "medium" },
+    { "id": "gv3", "type": "embedded", "stem": "Find the simple shape embedded in the complex figure.", "target": "L", "options": ["┼", "╫", "╙", "╪"], "answer": "╙", "difficulty": "hard" }
+  ],
+  "gfq_quantitative_reasoning": [
+    { "id": "gfq1", "type": "arithmetic", "stem": "If 15 apples cost $3.00, how much does each apple cost?", "options": ["15 cents", "20 cents", "25 cents", "30 cents"], "answer": "20 cents", "difficulty": "easy" },
+    { "id": "gfq2", "type": "logic", "stem": "John is 12 and 3x as old as his brother. How old will John be when he is 2x as old as his brother?", "options": ["14", "16", "18", "20"], "answer": "16", "difficulty": "medium" },
+    { "id": "gfq3", "type": "proportionality", "stem": "If it takes 31 minutes to bake 2 cakes, how many minutes will it take for 12 cakes?", "options": ["124", "155", "186", "217"], "answer": "186", "difficulty": "hard" },
+    { "id": "gfq4", "type": "sets", "stem": "12 members at a conference shake hands with everyone else once. How many total handshakes occur?", "options": ["66", "72", "132", "144"], "answer": "66", "difficulty": "expert" }
+  ],
+  "gc_information": [
+    { "id": "info1", "stem": "On what continent is Bolivia located?", "options": ["Africa", "Asia", "South America", "Europe"], "answer": "South America", "difficulty": "easy" },
+    { "id": "info2", "stem": "How many inches are in a yard?", "options": ["12", "24", "36", "48"], "answer": "36", "difficulty": "medium" },
+    { "id": "info3", "stem": "Who was Charles Lindbergh?", "options": ["Author", "Aviator", "Scientist", "President"], "answer": "Aviator", "difficulty": "medium" },
+    { "id": "info4", "stem": "What imaginary line divides the Earth into the North and South hemispheres?", "options": ["Prime Meridian", "Arctic Circle", "Equator", "Tropic of Cancer"], "answer": "Equator", "difficulty": "hard" }
+  ]
+}
