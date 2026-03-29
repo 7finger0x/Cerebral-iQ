@@ -1,0 +1,76 @@
+{
+  "name": "@vibecheck-ai/cli",
+  "version": "24.5.0",
+  "description": "The trust layer for AI-generated software. Catches phantom dependencies, ghost API routes, fake SDK methods, and hardcoded secrets — before they ship.",
+  "license": "MIT",
+  "author": "VibeCheck <hello@vibecheck.ai>",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/vibecheck-oss/vibecheck"
+  },
+  "bugs": {
+    "url": "https://github.com/vibecheck-oss/vibecheck/issues"
+  },
+  "homepage": "https://vibecheck.ai",
+  "keywords": [
+    "cli",
+    "vibecheck",
+    "ai",
+    "hallucination",
+    "code-quality",
+    "linter",
+    "phantom-dependency"
+  ],
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist/",
+    "README.md",
+    "LICENSE"
+  ],
+  "bin": {
+    "vibecheck": "./dist/index.js",
+    "vc": "./dist/index.js"
+  },
+  "main": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js",
+    "./runner": "./dist/runner/FileRunner.js"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.1"
+  },
+  "optionalDependencies": {
+    "@isl-lang/parser": "^1.0.0",
+    "playwright": "^1.49.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "esbuild": "^0.25.0",
+    "typescript": "^5.8.0",
+    "vitest": "^2.1.8",
+    "@repo/shared-types": "1.1.0",
+    "@repo/context-evolution": "0.1.0",
+    "@vibecheck/core": "2.0.0-beta.1",
+    "@vibecheck/codegraph": "1.1.0",
+    "@repo/shared": "0.1.0",
+    "@vibecheck/engines": "2.0.0-beta.1",
+    "@repo/subscriptions": "1.0.0",
+    "@repo/context-engine": "1.1.0",
+    "@vibecheck/truthpack": "1.0.0",
+    "@vibecheck/discovery": "1.0.0",
+    "@vibecheck/roast": "1.0.0",
+    "@vibecheck/vibe-prompt": "0.1.0"
+  },
+  "scripts": {
+    "build": "node esbuild.mjs && node -e \"require('fs').chmodSync('dist/index.js', '755')\"",
+    "build:production": "node esbuild.mjs --production && node -e \"require('fs').chmodSync('dist/index.js', '755')\"",
+    "compile": "tsc -p . --noEmit",
+    "dev": "tsx src/index.ts",
+    "test": "vitest run"
+  }
+}

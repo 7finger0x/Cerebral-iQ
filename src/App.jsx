@@ -30,7 +30,7 @@ function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', width: '100%' }}
+            className="flex-center section-full"
           >
             <Auth onLogin={setUser} />
           </motion.div>
@@ -39,21 +39,21 @@ function App() {
             key="content-view"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            style={{ width: '100%' }}
+            className="w-full"
           >
-            <nav style={{ padding: '1.55rem 2rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center', position: 'sticky', top: 0, background: 'rgba(5, 5, 10, 0.8)', backdropFilter: 'blur(10px)', zIndex: 100 }}>
+            <nav className="navbar flex-between">
               <h2 className="gradient-text font-orbitron" style={{ fontSize: '1.5rem', cursor: 'pointer' }} onClick={() => setView('hero')}>
                 Cerebral iQ
               </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem' }}>
-                <span style={{ color: 'var(--color-primary)', fontSize: '0.9rem', opacity: 0.8 }}>{user?.email || 'Unauthorized'}</span>
+              <div className="flex-center" style={{ gap: '1.5rem' }}>
+                <span className="badge-primary" style={{ fontSize: '0.9rem', opacity: 0.8 }}>{user?.email || 'Unauthorized'}</span>
                 <button className="btn-outline" style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }} onClick={handleLogout}>
                   Sign Out
                 </button>
               </div>
             </nav>
 
-            <main style={{ minHeight: 'calc(100vh - 100px)', padding: '2rem', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <main className="flex-col items-center" style={{ minHeight: 'calc(100vh - 100px)', padding: '2rem' }}>
               <AnimatePresence mode="wait">
                 {view === 'hero' && (
                   <motion.div 
@@ -61,21 +61,21 @@ function App() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="landing-page"
-                    style={{ display: 'flex', flexDirection: 'column', gap: '8rem', paddingBottom: '8rem', width: '100%', maxWidth: '1200px' }}
+                    className="landing-page flex-col"
+                    style={{ gap: '8rem', paddingBottom: '8rem', width: '100%', maxWidth: '1200px' }}
                   >
                     {/* Section 1: Hero (The Hook) */}
-                    <section style={{ textAlign: 'left', minHeight: '85vh', display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '4rem', alignItems: 'center' }}>
+                    <section className="hero-layout">
                       <motion.div
                         initial={{ x: -30, opacity: 0 }}
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.2 }}
                       >
-                        <div style={{ display: 'flex', gap: '0.8rem', marginBottom: '1.5rem' }}>
-                          <span style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-primary)', padding: '0.3rem 0.8rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.1)' }}>
+                        <div className="flex" style={{ gap: '0.8rem', marginBottom: '1.5rem' }}>
+                          <span className="badge badge-primary">
                             ✓ SCIENTIFICALLY VALIDATED
                           </span>
-                          <span style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--color-accent)', padding: '0.3rem 0.8rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', border: '1px solid rgba(255,255,255,0.1)' }}>
+                          <span className="badge badge-accent">
                             ◎ EXPERT REVIEWED
                           </span>
                         </div>
@@ -89,7 +89,7 @@ function App() {
                           Go beyond simple puzzles. Discover your profile across <span style={{ color: 'white' }}>7 distinct cognitive domains</span> using clinical-grade CHC standards. Accurate, adaptive, and actionable.
                         </p>
                         
-                        <div style={{ display: 'flex', gap: '1rem', marginTop: 'auto' }}>
+                        <div className="flex" style={{ gap: '1rem', marginTop: 'auto' }}>
                           <button className="btn-primary" style={{ padding: '1.2rem 2.5rem' }} onClick={() => setView('assessment')}>Launch Assessment</button>
                           <button className="btn-outline" style={{ padding: '1.2rem 2.5rem' }} onClick={() => setView('dashboard')}>View Demo</button>
                         </div>
@@ -100,31 +100,31 @@ function App() {
                         animate={{ x: 0, opacity: 1 }}
                         transition={{ delay: 0.4 }}
                       >
-                         <MatrixMiniItem onSolve={() => console.log('Solved!')} />
+                         <MatrixMiniItem onSolve={() => {}} />
                       </motion.div>
                     </section>
 
                     {/* Section 2: Performance Value Proposition */}
-                    <section style={{ textAlign: 'center' }}>
+                    <section className="text-center">
                        <span style={{ color: 'var(--color-primary)', fontSize: '0.8rem', fontWeight: 'bold', letterSpacing: '2px' }}>DATA THAT PREDICTS SUCCESS</span>
                        <h2 style={{ fontSize: '3rem', margin: '1.5rem 0 4rem' }}>Quantifying Peak Performance</h2>
-                       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem' }}>
-                          <div className="glass-panel" style={{ padding: '2.5rem', textAlign: 'left', borderTop: '4px solid var(--color-primary)' }}>
-                             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>14x</div>
+                       <div className="stat-grid">
+                          <div className="glass-panel stat-card stat-card-primary">
+                             <div className="stat-value">14x</div>
                              <h4 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'white' }}>The Predictive Edge</h4>
                              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
                                 Standard interviews are notoriously unreliable. Validated psychometric assessments are <strong>over 14 times better</strong> at predicting future job performance.
                              </p>
                           </div>
-                          <div className="glass-panel" style={{ padding: '2.5rem', textAlign: 'left', borderTop: '4px solid var(--color-accent)' }}>
-                             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>+43%</div>
+                          <div className="glass-panel stat-card stat-card-accent">
+                             <div className="stat-value">+43%</div>
                              <h4 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'white' }}>Return on Talent</h4>
                              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
                                 High-performing individuals with superior fluid reasoning ($G_f$) produce <strong>43% more revenue</strong> on average than their peers.
                              </p>
                           </div>
-                          <div className="glass-panel" style={{ padding: '2.5rem', textAlign: 'left', borderTop: '4px solid white' }}>
-                             <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>3.2x</div>
+                          <div className="glass-panel stat-card stat-card-white">
+                             <div className="stat-value">3.2x</div>
                              <h4 style={{ fontSize: '1.2rem', marginBottom: '1rem', color: 'white' }}>Cost of Guessing</h4>
                              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: '1.6' }}>
                                 Hiring a poor performer costs up to <strong>3.2 times their annual salary</strong> in lost productivity and turnover. Science eliminates the guesswork.
@@ -134,13 +134,13 @@ function App() {
                     </section>
 
                     {/* Section 3: The Science */}
-                    <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '4rem', alignItems: 'center', textAlign: 'left' }}>
+                    <section className="section-split">
                       <div className="glass-panel" style={{ padding: '3rem' }}>
                         <h2 style={{ fontSize: '2rem', marginBottom: '1.5rem' }}>Adaptive Precision</h2>
                         <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.8' }}>
                           Our <strong>IRT-powered engine</strong> selects items in real-time based on your specific performance. This reduces total assessment time by <strong>15%</strong> while maintaining clinical-grade reliability ($\alpha \ge 0.90$).
                         </p>
-                        <div style={{ marginTop: '2rem', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', fontSize: '0.8rem', color: 'var(--color-primary)' }}>
+                        <div className="badge-primary" style={{ marginTop: '2rem', padding: '1rem', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', fontSize: '0.8rem' }}>
                            ◎ Standardized against global normative benchmarks for 2026.
                         </div>
                       </div>
@@ -149,17 +149,17 @@ function App() {
                         <p style={{ color: 'var(--color-text-muted)', lineHeight: '1.7', marginBottom: '2rem' }}>
                           Receive a multi-dimensional breakdown of your <strong>Fluid Reasoning ($G_f$)</strong>, <strong>Working Memory ($G_{wm}$)</strong>, and <strong>Crystallized Knowledge ($G_c$)</strong>.
                         </p>
-                        <ul style={{ listStyle: 'none', padding: 0, color: 'white', opacity: 0.8, fontSize: '0.95rem' }}>
-                           <li style={{ marginBottom: '0.8rem' }}>✓ Zero hidden paywalls.</li>
-                           <li style={{ marginBottom: '0.8rem' }}>✓ Full PDF Clinical Export.</li>
-                           <li style={{ marginBottom: '0.8rem' }}>✓ Longitudinal tracking included.</li>
+                        <ul className="feature-list">
+                           <li>✓ Zero hidden paywalls.</li>
+                           <li>✓ Full PDF Clinical Export.</li>
+                           <li>✓ Longitudinal tracking included.</li>
                         </ul>
                       </div>
                     </section>
 
-                    <section style={{ textAlign: 'center', padding: '4rem 2rem' }}>
-                      <h2 style={{ fontSize: '2.5rem', marginBottom: '2rem' }}>Ready to Benchmark Your Potential?</h2>
-                      <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <section className="section-cta">
+                      <h2 style={{ fontSize: '2.5rem', marginBottom: '2rem' }}>Benchmarking Potential?</h2>
+                      <div className="flex-center" style={{ gap: '1rem' }}>
                         <button className="btn-primary" style={{ padding: '1.5rem 4rem', fontSize: '1.1rem' }} onClick={() => setView('assessment')}>Start Assessment</button>
                       </div>
                     </section>

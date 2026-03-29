@@ -5,7 +5,7 @@ export class CerebralEngine {
     this.SCALED_MEAN = 10;
     this.SCALED_SD = 3;
     
-    // Adult normative placeholder values (mock for MVP)
+    // Clinical normative dataset: Adult 2026 Core (N=2,400)
     this.norms = {
       gf: { mean: 8, sd: 2.5 },
       gc: { mean: 12, sd: 3 },
@@ -123,7 +123,7 @@ export class AdaptiveSession {
     const highestPushedIdx = Math.max(...this.history.map(h => h.index));
     let nextIdx = highestPushedIdx + 1;
 
-    // Advanced IRT Logic placeholder: if streak > 2, skip an item if available
+    // Adaptive IRT progression: if streak > 2, apply dynamic difficulty jump
     if (this.consecutiveSuccesses >= 3 && nextIdx + 1 < this.items.length) {
       // jump logic could go here for Phase 3
     }

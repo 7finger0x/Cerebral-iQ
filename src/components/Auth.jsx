@@ -39,7 +39,7 @@ export default function Auth({ onLogin }) {
           type="email" 
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email address"
+          placeholder="EMAIL_IDENTITY"
           required
           className="input-field"
           style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.05)', color: 'white', outline: 'none' }}
@@ -48,7 +48,7 @@ export default function Auth({ onLogin }) {
           type="password" 
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
+          placeholder="SECURE_CREDENTIALS"
           required
           className="input-field"
           style={{ width: '100%', padding: '1rem', borderRadius: '8px', border: '1px solid var(--color-border)', background: 'rgba(255,255,255,0.05)', color: 'white', outline: 'none' }}

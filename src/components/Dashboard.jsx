@@ -28,10 +28,14 @@ export default function Dashboard({ user, scores = {} }) {
   useEffect(() => {
     if (user && user.id) {
       setLoading(true);
-      fetchUserAssessments(user.id).then(data => {
-        setHistory(data);
-        setLoading(false);
-      });
+      fetchUserAssessments(user.id)
+        .then(data => {
+          setHistory(data);
+          setLoading(false);
+        })
+        .catch(() => {
+          setLoading(false);
+        });
     }
   }, [user]);
 
@@ -81,18 +85,18 @@ export default function Dashboard({ user, scores = {} }) {
   ];
 
   const renderStatCard = (title, domainKey, data) => (
-    <div key={domainKey} style={{ background: 'rgba(255,255,255,0.02)', padding: '0.8rem', borderRadius: '8px', opacity: data.scaled === '--' ? 0.5 : 1 }}>
-      <div style={{ color: 'var(--color-text-muted)', fontSize: '0.65rem', textTransform: 'uppercase' }}>{title}</div>
-      <div style={{ fontSize: '1.1rem', fontWeight: 'bold' }}>{data.scaled}</div>
-      <div style={{ color: 'var(--color-accent)', fontSize: '0.65rem' }}>{data.qualitative}</div>
+    <div key={domainKey} className="dashboard-card" style={{ opacity: data.scaled === '--' ? 0.5 : 1 }}>
+      <div className="muted text-xs uppercase">{title}</div>
+      <div className="font-bold text-lg">{data.scaled}</div>
+      <div className="accent text-xs">{data.qualitative}</div>
     </div>
   );
 
   return (
-    <div style={{ width: '100%', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2rem' }}>
-        <div style={{ textAlign: 'left' }}>
-           <h2 style={{ fontSize: '2.5rem', marginBottom: '0.2rem' }} className="gradient-text">Cognitive Intelligence Profile</h2>
+    <div className="w-full" style={{ maxWidth: '1200px', margin: '0 auto' }}>
+      <div className="dashboard-header">
+        <div className="text-left">
+           <h2 className="text-3xl gradient-text" style={{ marginBottom: '0.2rem' }}>Cognitive Intelligence Profile</h2>
            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>Scientific Clinical Assessment • CHC Standard</p>
         </div>
         <button onClick={generatePDF} className="btn-primary" style={{ padding: '0.8rem 1.5rem', fontSize: '0.8rem' }}>

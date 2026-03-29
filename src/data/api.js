@@ -21,7 +21,6 @@ export async function fetchItemsForDomain(domainKey) {
       throw new Error(`Domain ${domainKey} not found in database.`);
     }
   } catch (error) {
-    console.error(`Error fetching items for ${domainKey}:`, error);
     return [];
   }
 }
@@ -34,10 +33,8 @@ export async function saveAssessmentSession(userId, scores) {
     // const { error } = await supabase.from('assessments').insert([{ user_id: userId, profile: scores }]);
     // if (error) throw error;
     
-    console.log(`Phase 3: Assessment saved successfully to backend for user: ${userId}`, scores);
     return true;
   } catch (error) {
-    console.error("Failed to save assessment:", error);
     return false;
   }
 }
@@ -62,7 +59,6 @@ export async function fetchUserAssessments(userId) {
     
     return []; // New user or guest
   } catch (error) {
-    console.error(`Error fetching history for user ${userId}:`, error);
     return [];
   }
 }

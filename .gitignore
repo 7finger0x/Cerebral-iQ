@@ -32,3 +32,8 @@ dist-ssr/
 # System files
 Thumbs.db
 Desktop.ini
+
+# VibeCheck
+.vibecheck/screenshots/
+.vibecheck/scan-results.json
+.vibecheck/context-engine-ledger.json
