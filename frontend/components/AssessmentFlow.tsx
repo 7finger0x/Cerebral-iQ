@@ -10,6 +10,7 @@ import {
 import MatrixRenderer from './MatrixRenderer';
 import { engineApi, Item, AssessmentResponse } from '../lib/api';
 import { logger } from '../lib/logger';
+import { useHighPrecisionTimer } from '../hooks/useHighPrecisionTimer';
 
 interface AssessmentFlowProps {
   onComplete: (results: { iq: number; classification: string; subtests: Record<string, number> }) => void;
@@ -25,6 +26,9 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
   const [theta, setTheta] = useState(0.0);
   const [loading, setLoading] = useState(false);
 
+  // High Precision timing for Processing Speed (Gs) domains
+  const timer = useHighPrecisionTimer();
+
   // Target length for stable SEM
   const TARGET_ITEMS = 20;
 
@@ -35,10 +39,14 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
       setSessionId(data.session_id);
       setCurrentQuestion(data.first_item);
       setStep('testing');
+      // Start timer if first item is timed
+      if (data.first_item?.domain === 'Gs' || data.first_item?.metadata?.timed) {
+        timer.start();
+      }
     } catch (error) {
       logger.error('Error starting session:', error);
       // Fallback for demo
-      setCurrentQuestion({
+      const fallbackItem: Item = {
         id: 'gf_m_001', 
         item_idx: 0,
         domain: 'Gf', 
@@ -46,7 +54,8 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
         content: 'Identify the missing pattern sequence.',
         a: 1.0, b: 0.0, c: 0.2, // Standard difficulty params
         metadata: { name: 'Simple Pattern' }
-      });
+      };
+      setCurrentQuestion(fallbackItem);
       setStep('testing');
     } finally {
       setLoading(false);
@@ -55,6 +64,12 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
 
   const handleAnswer = async (responseValue: number) => {
     if (!currentQuestion) return;
+    
+    // Stop precision timer if it was active
+    const latency = (currentQuestion.domain === 'Gs' || currentQuestion.metadata?.timed) 
+      ? timer.stop() 
+      : undefined;
+
     setLoading(true);
     const updatedHistory = [...history, currentQuestion.item_idx];
     setHistory(updatedHistory);
@@ -65,7 +80,8 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
         currentQuestion.item_idx,
         responseValue,
         theta,
-        history
+        history,
+        latency
       );
 
       const nextProgress = Math.min(100, Math.round((updatedHistory.length / TARGET_ITEMS) * 100));
@@ -77,6 +93,12 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
       } else {
         setCurrentQuestion(result.next_item);
         if (result.updated_theta) setTheta(result.updated_theta);
+        
+        // Start timer for next question if timed
+        if (result.next_item?.domain === 'Gs' || result.next_item?.metadata?.timed) {
+          timer.start();
+        }
+        
         setLoading(false);
       }
     } catch (error) {
@@ -93,7 +115,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
 
   const finalizeScore = async (finalTheta: number) => {
     try {
-      const results = await engineApi.finalizeScore(finalTheta);
+      const results = await engineApi.finalizeScore(sessionId, finalTheta);
       onComplete(results);
     } catch (error) {
       logger.error('Error finalizing score:', error);

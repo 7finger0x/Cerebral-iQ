@@ -39,7 +39,7 @@ export const engineApi = {
     }
   },
 
-  submitAnswer: async (sessionId: string, itemIdx: number, response: number, currentTheta: number, history: number[]): Promise<AssessmentResponse> => {
+  submitAnswer: async (sessionId: string, itemIdx: number, response: number, currentTheta: number, history: number[], latency?: number): Promise<AssessmentResponse> => {
     try {
       const res = await fetch(`${API_BASE_URL}/assessment/submit`, {
         method: 'POST',
@@ -49,7 +49,8 @@ export const engineApi = {
           item_idx: itemIdx,
           response: response,
           current_theta: currentTheta,
-          history: history
+          history: history,
+          latency: latency
         }),
       });
       if (!res.ok) {
@@ -63,9 +64,9 @@ export const engineApi = {
     }
   },
 
-  finalizeScore: async (theta: number) => {
+  finalizeScore: async (sessionId: string, theta: number) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/assessment/finalize/${theta}`, {
+      const res = await fetch(`${API_BASE_URL}/assessment/finalize/${sessionId}/${theta}`, {
         method: 'GET',
       });
       if (!res.ok) {

@@ -3,39 +3,41 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 import uuid
+import os
+from dotenv import load_dotenv
+from supabase import create_client, Client
 
 # Internal Imports
 from psychometrics.scoring import calculate_deviation_iq
 from psychometrics.selection import select_next_item, update_theta
-from models.item_bank import ITEM_BANK
+from models.item_bank import ITEM_BANK, load_bank
+
+load_dotenv()
 
 app = FastAPI(title="Cerebral iQ Psychometric Engine")
+
+# Supabase Client for Engine Persistance
+supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
+supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
+supabase: Client = create_client(supabase_url, supabase_key)
 
 # Configure CORS for Next.js 15
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # In production, restrict to your frontend domain
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 # --- Schemas ---
-class AssessmentSession(BaseModel):
-    session_id: str
-    theta: float = 0.0
-    responses: List[int] = []
-    item_indices: List[int] = []
-
 class AnswerSubmission(BaseModel):
     session_id: str
     item_idx: int
     response: int # 0 or 1
     current_theta: float
-    history: List[int] # List of indices answered
-
-# --- In-Memory Store (Mock for now, replace with Redis/DB later) ---
-sessions = {}
+    history: List[int]
+    latency: Optional[float] = None
 
 # --- Endpoints ---
 @app.get("/")
@@ -44,60 +46,92 @@ def read_root():
 
 @app.post("/assessment/start")
 async def start_assessment():
-    session_id = str(uuid.uuid4())
+    # Ensure bank is loaded
+    if not ITEM_BANK:
+        load_bank()
+        
     # Select first item (usually something neutral index around theta=0)
-    # Using theta=0.0 to start
     next_idx = select_next_item(0.0, [])
     
-    sessions[session_id] = {
-        "theta": 0.0,
-        "history": [],
-        "responses": []
-    }
-    
-    return {
-        "session_id": session_id,
-        "first_item": ITEM_BANK[next_idx] if next_idx != -1 else None,
-        "item_idx": next_idx
-    }
+    # Create persistent session in Supabase
+    try:
+        response = supabase.table("sessions").insert({
+            "theta": 0.0,
+            "history": [],
+            "responses": [],
+            "latencies": []
+        }).execute()
+        
+        session_data = response.data[0]
+        session_id = session_data["id"]
+        
+        return {
+            "session_id": session_id,
+            "first_item": ITEM_BANK[next_idx] if next_idx != -1 else None,
+            "item_idx": next_idx
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Failed to initialize session: {e}")
 
 @app.post("/assessment/submit")
 async def submit_answer(data: AnswerSubmission):
-    # Update local state
-    if data.session_id not in sessions:
-        # Fallback for simple stateless calls (allows client to keep history)
-        pass 
-        
-    new_history = data.history + [data.item_idx]
-    # Update responses? Need to map response to index correctly.
-    # We assume 'response' matches the last item_idx.
+    # Fetch session to validate/update
+    try:
+        session_res = supabase.table("sessions").select("*").eq("id", data.session_id).single().execute()
+        session = session_res.data
+    except Exception:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    new_history = session["history"] + [data.item_idx]
+    new_responses = session["responses"] + [data.response]
+    new_latencies = session.get("latencies", []) + [data.latency if data.latency is not None else -1.0]
     
-    # We estimate theta based on full history (Simplified for now)
-    # Note: In production, store the binary responses in order of item_indices.
-    # For now we use the mock current_theta + latest response.
-    # Real logic: theta = update_theta(responses, item_indices)
+    # Update Theta based on full history
+    new_theta = update_theta(new_responses, new_history)
     
     # Select next item
-    next_idx = select_next_item(data.current_theta, new_history)
+    next_idx = select_next_item(new_theta, new_history)
+    
+    # Persist update
+    supabase.table("sessions").update({
+        "theta": new_theta,
+        "history": new_history,
+        "responses": new_responses,
+        "latencies": new_latencies,
+        "updated_at": "now()"
+    }).eq("id", data.session_id).execute()
     
     if next_idx == -1:
-        # Scoring phase (Manual trigger)
         return {
             "status": "complete",
-            "next_item": None
+            "next_item": None,
+            "updated_theta": new_theta
         }
 
     return {
         "status": "continuing",
         "next_item": ITEM_BANK[next_idx],
         "item_idx": next_idx,
-        "updated_theta": data.current_theta # In real IRT, this updates on every step
+        "updated_theta": new_theta
     }
 
-@app.get("/assessment/finalize/{theta}")
-async def finalize_score(theta: float):
+@app.get("/assessment/finalize/{session_id}/{theta}")
+async def finalize_score(session_id: str, theta: float):
+    # Fetch session for history/context (optional update)
     # Transform latent trait (theta) to Deviation IQ
-    # Mean (100) and SD (15) mapping
-    # Z-score of theta/1.0 corresponds to standard Deviation IQ
     iq_data = calculate_deviation_iq(100 + (15 * theta))
+    
+    # Save profile results persistently
+    try:
+        supabase.table("profiles").insert({
+            "full_scale_iq": iq_data["iq"],
+            "classification": iq_data["classification"],
+            # Simplified subtest scores for demo (in production calculate separately)
+            "gf_score": iq_data["iq"] - 2, 
+            "gwm_score": iq_data["iq"] + 1,
+            "created_at": "now()"
+        }).execute()
+    except Exception as e:
+        print(f"[Warn] Failed to save profile record: {e}")
+        
     return iq_data
