@@ -11,6 +11,10 @@ import { logger } from '../lib/logger';
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' });
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 
+/**
+ * Cerebral iQ Landing Portal [Anonymous Entry Point]
+ * V4.2 Protocol: Gated Results enabled (Account created POST-test)
+ */
 export default function LandingPage() {
   const [showAssessment, setShowAssessment] = React.useState(false);
   const router = useRouter();
