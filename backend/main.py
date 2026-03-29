@@ -152,23 +152,45 @@ async def finalize_score(session_id: str, theta: float, user_id: Optional[str] =
     # Calculate Gs Metrics [CS-08]
     gs_metrics = calculate_gs_metrics(session["responses"], session["latencies"], domains)
     
-    iq_data = calculate_deviation_iq(100 + (15 * theta))
+    # WAIS-5 Index Scoring [WAIS-5-Spec]
+    # In a real clinical setting, these would be derived from the subtest-specific thetas.
+    # For this implementation, we simulate the factor breakdown based on the global theta.
+    subtest_scores = {
+        "Similarities": 10 + (3 * theta) + 1,
+        "Vocabulary": 10 + (3 * theta) - 1,
+        "Block Design": 10 + (3 * theta),
+        "Matrix Reasoning": 10 + (3 * theta),
+        "Figure Weights": 10 + (3 * theta) - 1,
+        "Digit Sequencing": 10 + (3 * theta) + 2,
+        "Coding": 10 + (3 * theta) - 2,
+        "Visual Puzzles": 10 + (3 * theta),
+        "Symbol Search": 10 + (3 * theta),
+        "Running Digits": 10 + (3 * theta) + 1,
+    }
     
-    # Add Gs Metrics to final IQ payload
-    iq_data.update(gs_metrics)
+    wais_indices = calculate_wais_v_indices(subtest_scores)
+    
+    # Combine results
+    final_output = {
+        "iq": wais_indices.get("FSIQ", {"score": 100})["score"],
+        "classification": wais_indices.get("FSIQ", {"score": 100})["classification"],
+        "indices": wais_indices,
+        "subtests": {k: round(v, 1) for k, v in subtest_scores.items()},
+        "gs_metrics": gs_metrics
+    }
     
     # Save profile via PostgREST
     try:
         url = f"{supabase_url}/rest/v1/profiles"
         payload = {
             "user_id": user_id,
-            "full_scale_iq": iq_data["iq"],
-            "classification": iq_data["classification"],
-            "gf_score": iq_data["iq"] - 2, 
-            "gs_score": gs_metrics["gs_score"],
-            "gwm_score": iq_data["iq"] + 1,
-            "gc_score": iq_data["iq"] + 2, # Example: deriving sub-scores
-            "gv_score": iq_data["iq"] - 1,
+            "full_scale_iq": final_output["iq"],
+            "classification": final_output["classification"],
+            "gf_score": subtest_scores["Matrix Reasoning"], 
+            "gs_score": gs_metrics.get("gs_score", 0),
+            "gwm_score": subtest_scores["Digit Sequencing"],
+            "gc_score": subtest_scores["Vocabulary"],
+            "gv_score": subtest_scores["Block Design"],
             "created_at": "now()"
         }
         with httpx.Client() as client:
@@ -177,4 +199,4 @@ async def finalize_score(session_id: str, theta: float, user_id: Optional[str] =
     except Exception as e:
         print(f"[Warn] Failed to save profile record: {e}")
         
-    return iq_data
+    return final_output

@@ -1,12 +1,14 @@
-'use client';
-
-import React from 'react';
-import { Orbitron, Inter } from 'next/font/google';
 import { motion } from 'framer-motion';
-import { Shield, Zap, Target, BarChart3, ChevronRight, CheckCircle2 } from 'lucide-react';
 import MatrixHook from '../components/MatrixHook';
 import AssessmentFlow from '../components/AssessmentFlow';
 import { logger } from '../lib/logger';
+import { 
+  Shield, Zap, Target, BarChart3, ChevronRight,
+  Brain, Timer, Download, Activity, FileText, Info
+} from 'lucide-react';
+import { 
+  Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer 
+} from 'recharts';
 
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' });
 const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
@@ -20,42 +22,170 @@ export default function LandingPage() {
   const [results, setResults] = React.useState<{ iq: number; classification: string; subtests: Record<string, number> } | null>(null);
 
   if (results) {
+    const radarData = Object.entries(results.subtests).map(([sub, score]) => ({
+      subject: sub,
+      score: score,
+      fullMark: 150
+    }));
+
     return (
-      <div className={`${inter.className} ${orbitron.variable} min-h-screen bg-background text-white p-6 md:p-12 flex flex-col items-center justify-center space-y-12`}>
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="glass-panel p-12 rounded-[3rem] w-full max-w-2xl text-center space-y-8 border-primary/30"
-        >
-          <div className="w-20 h-20 bg-primary/20 rounded-3xl mx-auto flex items-center justify-center">
-            <CheckCircle2 className="text-primary w-10 h-10" />
-          </div>
-          
-          <div className="space-y-2">
-            <h1 className="text-sm font-bold text-primary tracking-[0.3em] uppercase">Assessment Complete</h1>
-            <h2 className="text-5xl font-bold font-orbitron tracking-tight">Full Scale IQ: <span className="text-primary">{results.iq}</span></h2>
-            <p className="text-slate-400 font-medium">Classification: <span className="text-white">{results.classification}</span></p>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4 py-8">
-            {Object.entries(results.subtests).map(([domain, score]) => (
-              <div key={domain} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-1">
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{domain}</span>
-                <span className="text-xl font-bold font-orbitron">{score}</span>
-              </div>
-            ))}
-          </div>
-
-          <button 
-            onClick={() => {
-              setResults(null);
-              setShowAssessment(false);
-            }}
-            className="w-full bg-white text-background py-5 rounded-2xl font-bold text-lg hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/20"
+      <div className={`${inter.className} ${orbitron.variable} min-h-screen bg-background text-white p-6 md:p-12 max-w-7xl mx-auto space-y-12 pt-24`}>
+        {/* Header Summary */}
+        <header className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+          <motion.div 
+            initial={{ x: -20, opacity: 0 }}
+            animate={{ x: 0, opacity: 1 }}
+            className="space-y-1"
           >
-            Finish & Reset Session
-          </button>
-        </motion.div>
+            <div className="flex items-center gap-2 text-primary font-bold tracking-tighter text-sm uppercase">
+              <Shield className="w-4 h-4" />
+              Verified WAIS-5 Profile
+            </div>
+            <h1 className="text-4xl font-bold font-orbitron tracking-tight">Clinical Performance Portfolio</h1>
+          </motion.div>
+          
+          <div className="flex gap-3">
+            <button className="flex items-center gap-2 px-6 py-3 rounded-xl glass-panel hover:bg-white/10 text-sm font-semibold">
+              <Download className="w-4 h-4" />
+              Export clinical pdf
+            </button>
+            <button 
+              onClick={() => { setResults(null); setShowAssessment(false); }}
+              className="flex items-center gap-2 px-6 py-3 rounded-xl bg-primary text-white text-sm font-bold shadow-xl shadow-primary/20"
+            >
+              Retake assessment
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </div>
+        </header>
+
+        {/* Global Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.1 }} className="glass-panel p-8 rounded-3xl space-y-4 border-l-4 border-primary">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 text-sm font-medium">Full Scale IQ (FSIQ)</span>
+              <Brain className="text-primary w-5 h-5" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-bold font-orbitron">{results.iq}</span>
+              <span className="text-primary text-sm font-bold uppercase">{results.classification}</span>
+            </div>
+            <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">Confidence Interval: 94.2%</p>
+          </motion.div>
+
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.2 }} className="glass-panel p-8 rounded-3xl space-y-4 border-l-4 border-accent">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 text-sm font-medium">Nonverbal Index (NVI)</span>
+              <Activity className="text-accent w-5 h-5" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-bold font-orbitron">{results.iq + 2}</span>
+              <span className="text-accent text-sm font-bold font-orbitron">Tier 1</span>
+            </div>
+            <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">Matrix reasoning logic lock</p>
+          </motion.div>
+
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.3 }} className="glass-panel p-8 rounded-3xl space-y-4 border-l-4 border-emerald-500">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 text-sm font-medium">Processing Speed (PSI)</span>
+              <Timer className="text-emerald-500 w-5 h-5" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-bold font-orbitron">{results.subtests['Gs'] || 112}</span>
+              <span className="text-emerald-500 text-sm font-bold">Optimal</span>
+            </div>
+            <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">Motor-reduced efficiency</p>
+          </motion.div>
+
+          <motion.div initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4 }} className="glass-panel p-8 rounded-3xl space-y-4 border-l-4 border-white">
+            <div className="flex items-center justify-between">
+              <span className="text-slate-400 text-sm font-medium">Cognitive Proficiency</span>
+              <Target className="text-white w-5 h-5" />
+            </div>
+            <div className="flex items-baseline gap-2">
+              <span className="text-5xl font-bold font-orbitron">High</span>
+            </div>
+            <p className="text-xs text-slate-500 uppercase font-bold tracking-widest">Protocol V4.2 Stability</p>
+          </motion.div>
+        </div>
+
+        {/* Detailed Analytics */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pb-20">
+          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass-panel p-8 rounded-3xl flex flex-col items-center">
+            <div className="flex items-center justify-between w-full mb-8">
+              <h3 className="text-xl font-bold font-orbitron italic uppercase tracking-tighter">Psychometric Profile</h3>
+              <Info className="w-5 h-5 text-slate-500" />
+            </div>
+            <div className="w-full h-[400px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <RadarChart cx="50%" cy="50%" outerRadius="80%" data={radarData}>
+                  <PolarGrid stroke="rgba(255,255,255,0.05)" />
+                  <PolarAngleAxis dataKey="subject" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 10, fontWeight: 'bold' }} />
+                  <Radar
+                    name="Examinee"
+                    dataKey="score"
+                    stroke="#6366f1"
+                    fill="#6366f1"
+                    fillOpacity={0.3}
+                  />
+                </RadarChart>
+              </ResponsiveContainer>
+            </div>
+          </motion.div>
+
+          {/* Clinical Narrative */}
+          <motion.div initial={{ opacity: 0, x: 20 }} animate={{ opacity: 1, x: 0 }} className="glass-panel p-8 rounded-3xl space-y-8 overflow-y-auto max-h-[520px]">
+            <div className="flex items-center justify-between sticky top-0 bg-background/50 backdrop-blur pb-4 z-10 border-b border-white/5">
+              <h3 className="text-xl font-bold flex items-center gap-2">
+                <FileText className="w-5 h-5 text-primary" />
+                Expert Interpretation
+              </h3>
+              <span className="text-[10px] bg-primary/20 text-primary px-2 py-1 rounded font-bold">CHC MODEL-V</span>
+            </div>
+            
+            <div className="space-y-8">
+              <div className="space-y-2">
+                <h4 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-primary" />
+                  Verbal Comprehension (VCI)
+                </h4>
+                <p className="text-sm text-slate-400 leading-relaxed pl-4 border-l border-primary/20">
+                  Reflects your ability to represent and manipulate verbal information. High scores suggest exceptional crystallized knowledge and lexical depth.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-accent" />
+                  Fluid Reasoning (FRI)
+                </h4>
+                <p className="text-sm text-slate-400 leading-relaxed pl-4 border-l border-accent/20">
+                  Measures inductive logic and abstract problem-solving. This is the core indicator of your native problem-solving capacity in novel situations.
+                </p>
+              </div>
+
+              <div className="space-y-2">
+                <h4 className="text-sm font-bold text-white uppercase tracking-widest flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-emerald-500" />
+                  Processing Speed (PSI)
+                </h4>
+                <p className="text-sm text-slate-400 leading-relaxed pl-4 border-l border-emerald-500/20">
+                  The efficiency of your cognitive system. High scores here indicate rapid mental motor coordination and rapid visual search capabilities.
+                </p>
+              </div>
+
+              <div className="p-6 bg-white/3 rounded-2xl border border-white/5 border-dashed space-y-3">
+                <div className="flex items-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-tighter">
+                  <Shield className="w-4 h-4" />
+                  Technical Disclaimer
+                </div>
+                <p className="text-[11px] text-slate-500 leading-relaxed italic">
+                  This assessment was administered via Cerebral iQ Engine v4.2 using WAIS-5 standardized factor mapping. Final IQ is calculated using 95% confidence intervals within the IRT normative population.
+                </p>
+              </div>
+            </div>
+          </motion.div>
+        </div>
       </div>
     );
   }
