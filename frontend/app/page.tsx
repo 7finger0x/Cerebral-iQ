@@ -2,10 +2,10 @@
 
 import React from 'react';
 import { Orbitron, Inter } from 'next/font/google';
-import { Shield, Zap, Target, BarChart3, ChevronRight } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { Shield, Zap, Target, BarChart3, ChevronRight, CheckCircle2 } from 'lucide-react';
 import MatrixHook from '../components/MatrixHook';
 import AssessmentFlow from '../components/AssessmentFlow';
-import { useRouter } from 'next/navigation';
 import { logger } from '../lib/logger';
 
 const orbitron = Orbitron({ subsets: ['latin'], variable: '--font-orbitron' });
@@ -17,15 +17,56 @@ const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
  */
 export default function LandingPage() {
   const [showAssessment, setShowAssessment] = React.useState(false);
-  const router = useRouter();
+  const [results, setResults] = React.useState<{ iq: number; classification: string; subtests: Record<string, number> } | null>(null);
+
+  if (results) {
+    return (
+      <div className={`${inter.className} ${orbitron.variable} min-h-screen bg-background text-white p-6 md:p-12 flex flex-col items-center justify-center space-y-12`}>
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          className="glass-panel p-12 rounded-[3rem] w-full max-w-2xl text-center space-y-8 border-primary/30"
+        >
+          <div className="w-20 h-20 bg-primary/20 rounded-3xl mx-auto flex items-center justify-center">
+            <CheckCircle2 className="text-primary w-10 h-10" />
+          </div>
+          
+          <div className="space-y-2">
+            <h1 className="text-sm font-bold text-primary tracking-[0.3em] uppercase">Assessment Complete</h1>
+            <h2 className="text-5xl font-bold font-orbitron tracking-tight">Full Scale IQ: <span className="text-primary">{results.iq}</span></h2>
+            <p className="text-slate-400 font-medium">Classification: <span className="text-white">{results.classification}</span></p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4 py-8">
+            {Object.entries(results.subtests).map(([domain, score]) => (
+              <div key={domain} className="bg-white/5 p-4 rounded-2xl border border-white/5 flex flex-col items-center gap-1">
+                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">{domain}</span>
+                <span className="text-xl font-bold font-orbitron">{score}</span>
+              </div>
+            ))}
+          </div>
+
+          <button 
+            onClick={() => {
+              setResults(null);
+              setShowAssessment(false);
+            }}
+            className="w-full bg-white text-background py-5 rounded-2xl font-bold text-lg hover:bg-primary hover:text-white transition-all shadow-2xl shadow-primary/20"
+          >
+            Finish & Reset Session
+          </button>
+        </motion.div>
+      </div>
+    );
+  }
 
   if (showAssessment) {
     return (
       <div className={`${inter.className} ${orbitron.variable} min-h-screen bg-background text-white selection:bg-primary/30 flex items-center justify-center`}>
         <AssessmentFlow 
-          onComplete={(results) => {
-            logger.log('Assessment Complete:', results);
-            router.push('/dashboard');
+          onComplete={(scoreResults) => {
+            logger.log('Assessment Complete:', scoreResults);
+            setResults(scoreResults);
           }}
           onCancel={() => setShowAssessment(false)}
         />
