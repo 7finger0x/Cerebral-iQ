@@ -78,7 +78,7 @@ export default function LandingPage() {
         </section>
 
         {/* Section 2: The Logic (CHC Table) */}
-        <section id="science" className="py-24 px-6 border-t border-white/5 bg-white/[0.01]">
+        <section id="science" className="py-24 px-6 border-t border-white/5 bg-white/1">
           <div className="max-w-5xl mx-auto space-y-16">
             <div className="text-center space-y-4">
               <h2 className="text-3xl md:text-5xl font-bold">Rigorous Foundations</h2>

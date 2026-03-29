@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useRef, useEffect, useState } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 
 interface MatrixHookProps {
   onSolve?: () => void;
@@ -10,12 +10,8 @@ interface MatrixHookProps {
 const MatrixHook: React.FC<MatrixHookProps> = ({ onSolve }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [solved, setSolved] = useState(false);
-  const [hoveredOption, setHoveredOption] = useState<number | null>(null);
 
   // Pattern Logic: A simple 3x3 matrix logic
-  // Top row: Circle, Square, Triangle
-  // Mid row: Square, Triangle, Circle
-  // Bot row: Triangle, Circle, ? (Should be Square)
   const drawShape = (ctx: CanvasRenderingContext2D, x: number, y: number, size: number, type: string) => {
     ctx.strokeStyle = '#6366f1';
     ctx.lineWidth = 2;
@@ -114,8 +110,6 @@ const MatrixHook: React.FC<MatrixHookProps> = ({ onSolve }) => {
             <button
               key={type}
               onClick={() => handleSelect(i)}
-              onMouseEnter={() => setHoveredOption(i)}
-              onMouseLeave={() => setHoveredOption(null)}
               className="w-16 h-16 rounded-xl border border-white/10 flex items-center justify-center hover:bg-white/5 transition-colors group"
             >
               <canvas

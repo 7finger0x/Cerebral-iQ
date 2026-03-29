@@ -1,27 +1,22 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  ChevronRight, Brain, Timer, 
+  Brain, Timer, 
   ArrowLeft, CheckCircle2, Loader2 
 } from 'lucide-react';
-
-interface AssessmentFlowProps {
-  onComplete: (results: any) => void;
-  onCancel: () => void;
-}
 
 import { engineApi, Item, AssessmentResponse } from '@/lib/api';
 
 interface AssessmentFlowProps {
-  onComplete: (results: any) => void;
+  onComplete: (results: { iq: number; classification: string; results: Record<string, any>[] }) => void;
   onCancel: () => void;
 }
 
 const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel }) => {
   const [step, setStep] = useState<'intro' | 'testing' | 'scoring'>('intro');
-  const [currentQuestion, setCurrentQuestion] = useState<any>(null);
+  const [currentQuestion, setCurrentQuestion] = useState<Item | null>(null);
   const [sessionId, setSessionId] = useState<string>('');
   const [progress, setProgress] = useState(0);
   const [history, setHistory] = useState<number[]>([]);
@@ -42,7 +37,12 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
       console.error('Error starting session:', error);
       // Fallback for demo
       setCurrentQuestion({
-        id: 'gf_m_001', domain: 'Gf', type: 'matrix', item_idx: 0, 
+        id: 'gf_m_001', 
+        item_idx: 0,
+        domain: 'Gf', 
+        type: 'matrix', 
+        content: 'Identify the missing pattern sequence.',
+        a: 1.0, b: 0.0, c: 0.2, // Standard difficulty params
         metadata: { name: 'Simple Pattern' }
       });
       setStep('testing');
@@ -52,6 +52,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
   };
 
   const handleAnswer = async (responseValue: number) => {
+    if (!currentQuestion) return;
     setLoading(true);
     const updatedHistory = [...history, currentQuestion.item_idx];
     setHistory(updatedHistory);
@@ -107,7 +108,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="glass-panel p-12 rounded-[2rem] text-center space-y-8 max-w-xl border border-white/10"
+            className="glass-panel p-12 rounded-4xl text-center space-y-8 max-w-xl border border-white/10"
           >
             <div className="w-20 h-20 bg-primary/20 rounded-3xl mx-auto flex items-center justify-center">
               <Brain className="text-primary w-10 h-10" />
@@ -177,7 +178,7 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
             </div>
 
             {/* Question Workspace */}
-            <div className="glass-panel p-16 rounded-[2.5rem] flex flex-col items-center justify-center min-h-[400px] relative">
+            <div className="glass-panel p-16 rounded-4xl flex flex-col items-center justify-center min-h-[400px] relative">
               <div className="absolute top-8 left-8 flex items-center gap-2 text-[10px] text-slate-500 font-bold tracking-widest uppercase">
                 <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                 Clinical Environment
