@@ -94,9 +94,9 @@ async def submit_answer(data: AnswerSubmission):
     except Exception:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    new_history = session["history"] + [data.item_idx]
-    new_responses = session["responses"] + [data.response]
-    new_latencies = session.get("latencies", []) + [data.latency if data.latency is not None else -1.0]
+    new_history = (session.get("history") or []) + [data.item_idx]
+    new_responses = (session.get("responses") or []) + [data.response]
+    new_latencies = (session.get("latencies") or []) + [data.latency if data.latency is not None else -1.0]
     
     new_theta = update_theta(new_responses, new_history)
     next_idx = select_next_item(new_theta, new_history)

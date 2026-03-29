@@ -28,6 +28,13 @@ export const logger = {
         c['debug'](...args);
       }
     }
+  },
+  info: (...args: unknown[]) => {
+    if (!isProd && c) {
+      if (args.length > 0) {
+        c['log'](...args);
+      }
+    }
   }
 };
 

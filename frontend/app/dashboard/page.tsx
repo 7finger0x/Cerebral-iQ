@@ -4,11 +4,10 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { 
   Radar, RadarChart, PolarGrid, PolarAngleAxis, ResponsiveContainer,
-  AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip 
 } from 'recharts';
 import { 
   Brain, TrendingUp, Award, Download, 
-  ArrowRight, ShieldCheck, AlertCircle 
+  ArrowRight, ShieldCheck, AlertCircle, Timer 
 } from 'lucide-react';
 
 // Sample data for the CHC profile
@@ -51,7 +50,7 @@ export default function Dashboard() {
       </header>
 
       {/* Hero Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <div className="glass-panel p-8 rounded-3xl space-y-4 border-l-4 border-primary">
           <div className="flex items-center justify-between">
             <span className="text-slate-400 text-sm font-medium">Estimated Full Scale IQ</span>
@@ -74,6 +73,18 @@ export default function Dashboard() {
             <span className="text-accent text-sm font-bold">Top 6%</span>
           </div>
           <p className="text-xs text-slate-500">Benchmark: Global Professional Baseline 2026</p>
+        </div>
+
+        <div className="glass-panel p-8 rounded-3xl space-y-4 border-l-4 border-[#10b981]">
+          <div className="flex items-center justify-between">
+            <span className="text-slate-400 text-sm font-medium">Processing latency (Gs)</span>
+            <Timer className="text-[#10b981] w-5 h-5" />
+          </div>
+          <div className="flex items-baseline gap-2">
+            <span className="text-5xl font-bold font-orbitron">482</span>
+            <span className="text-[#10b981] text-sm font-bold">ms</span>
+          </div>
+          <p className="text-xs text-slate-500">Median Response Time (MRT) - Clinical Precision</p>
         </div>
 
         <div className="glass-panel p-8 rounded-3xl space-y-4 border-l-4 border-white">
