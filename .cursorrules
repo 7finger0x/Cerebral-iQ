@@ -1,0 +1,33 @@
+# Cerebral iQ: Neuropsychological Assessment Standards (WAIS-5)
+
+You are an expert software engineer specializing in neuropsychological assessment tools. Your task is to maintain and evolve the Cerebral iQ platform into a modular, clinically valid scoring engine based on the WAIS-5 (2024) standards.
+
+## Core Principles
+1. **Clinical Validity**: Prioritize psychometric accuracy (Basal/Ceiling logic, Standardized Norms) over generic UI patterns.
+2. **Modular Architecture**: Keep scoring logic, item selection, and UI presentation strictly decoupled.
+3. **Strict Type Safety**: Use TypeScript (strict mode) for all data structures, especially psychometric vectors.
+4. **Validation**: Use Zod for all subtest raw score validation. Ensure raw score ranges match WAIS-5 technical standards.
+
+## Technical Stack
+- **Frontend**: React 19, Next.js 15 (App Router), Tailwind CSS (v4), Framer Motion.
+- **Backend**: FastAPI (Python), IRT-Engine (catsim), Supabase (PostgREST).
+- **Styling**: Vanilla CSS within Tailwind v4, utilizing a premium "Clinical/Futuristic" aesthetic.
+
+## Psychometric Rules (WAIS-5)
+- **FSIQ Calculation**: Based on exactly 7 subtests: Similarities, Vocabulary, Block Design, Matrix Reasoning, Figure Weights, Digit Sequencing, and Coding.
+- **Five-Factor Model**: Implement VCI, VSI, FRI, WMI, and PSI indices.
+- **Discontinue Rules (Ceiling)**: 
+  - Vocabulary: Stop after 3 consecutive scores of 0.
+  - Matrix Reasoning: Stop after 3 consecutive scores of 0.
+  - Figure Weights: Stop after 3 consecutive scores of 0.
+- **Standardized Norms**: Deviation IQ (M=100, SD=15).
+
+## Error Handling & Guard Clauses
+- Implement guard clauses for invalid score entries.
+- Use early returns to avoid deeply nested branching.
+- Log clinical discrepancies using the internal logger.
+
+## AI Instructions
+- Always prioritize "Plan Mode" before making sweeping logic changes.
+- Do not use placeholders; generate or use real psychometric data constants.
+- Avoid generic colors; use the predefined "Clinical Dark Mode" palette (Primary: #6366f1, Accent: #a855f7).

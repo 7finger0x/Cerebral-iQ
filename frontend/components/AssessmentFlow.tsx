@@ -59,8 +59,20 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
   const [history, setHistory] = useState<number[]>([]);
   const [theta, setTheta] = useState(0.0);
   const [loading, setLoading] = useState(false);
+  const [consecutiveErrors, setConsecutiveErrors] = useState(0);
+
   // High Precision timing for Processing Speed (Gs) domains
   const timer = useHighPrecisionTimer();
+
+  /**
+   * WAIS-5 Discontinue Rule: 
+   * Stop after 3 consecutive scores of 0.
+   */
+  const checkDiscontinue = (score: number, currentErrors: number): boolean => {
+    const errorCount = score === 0 ? currentErrors + 1 : 0;
+    setConsecutiveErrors(errorCount);
+    return errorCount >= 3;
+  };
 
   // Target length for stable SEM
   const TARGET_ITEMS = 20;
@@ -114,6 +126,9 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
     const updatedHistory = [...history, currentQuestion.item_idx];
     setHistory(updatedHistory);
     
+    // Check for discontinuation (WAIS-5 Ceiling)
+    const shouldStop = checkDiscontinue(responseValue, consecutiveErrors);
+
     try {
       const result: AssessmentResponse = await engineApi.submitAnswer(
         sessionId,
@@ -127,19 +142,19 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
       const nextProgress = Math.min(100, Math.round((updatedHistory.length / TARGET_ITEMS) * 100));
       setProgress(nextProgress);
 
-      if (result.status === 'complete' || updatedHistory.length >= TARGET_ITEMS) {
+      if (result.status === 'complete' || updatedHistory.length >= TARGET_ITEMS || shouldStop) {
         setStep('scoring');
+        setConsecutiveErrors(0); // Reset for potential next phase or subtest
         await finalizeScore(result.updated_theta || theta);
       } else {
         setCurrentQuestion(result.next_item);
         if (result.updated_theta) setTheta(result.updated_theta);
-        
         setLoading(false);
       }
     } catch (error) {
       logger.error('Error submitting answer:', error);
       // Fallback behavior
-      if (updatedHistory.length >= 10) {
+      if (updatedHistory.length >= 10 || shouldStop) {
         setStep('scoring');
         finalizeScore(theta);
       } else {
