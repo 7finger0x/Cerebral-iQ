@@ -1,6 +1,6 @@
 import numpy as np
 from catsim import selection, estimation
-from models.item_bank import get_bank_matrix, ITEM_BANK
+from models.item_bank import get_bank, ITEM_BANK
 
 # Initialize the engine components
 selector = selection.MaxInfoSelector()
@@ -14,16 +14,15 @@ def select_next_item(theta: float, answered_indices: list) -> int:
     :param answered_indices: Indices of items already answered in the bank.
     :return: Index of the next item to present.
     """
-    bank = get_bank_matrix()
+    bank = get_bank()
     
-    # Exclude already answered items
     try:
         next_idx = selector.select(
-            items=bank, 
-            est_theta=theta, 
-            answered=answered_indices
+            item_bank=bank, 
+            est_theta=float(theta), 
+            administered_items=answered_indices
         )
-        return int(next_idx)
+        return int(next_idx) if next_idx is not None else -1
     except Exception as e:
         # Fallback if selection fails (e.g. end of bank)
         return -1
@@ -36,17 +35,14 @@ def update_theta(responses: list, item_indices: list) -> float:
     :param item_indices: Indices of the items in the bank.
     :return: Updated theta estimate.
     """
-    bank = get_bank_matrix()
-    
-    # Convert list of indices to a numpy slice/subset if needed or handle manually
-    subset_bank = bank[item_indices]
-    
+    bank = get_bank()
     try:
         new_theta = estimator.estimate(
-            items=subset_bank, 
-            responses=np.array(responses)
+            item_bank=bank,
+            administered_items=item_indices,
+            response_vector=[bool(r) for r in responses]
         )
         return float(new_theta)
-    except Exception:
+    except Exception as e:
         # Initial estimate if estimation fails (e.g. no variance in responses)
         return 0.0
