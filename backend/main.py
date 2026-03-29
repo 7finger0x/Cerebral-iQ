@@ -4,11 +4,11 @@ from pydantic import BaseModel
 from typing import List, Optional
 import uuid
 import os
+import httpx
 from dotenv import load_dotenv
-from supabase import create_client, Client
 
 # Internal Imports
-from psychometrics.scoring import calculate_deviation_iq
+from psychometrics.scoring import calculate_deviation_iq, calculate_gs_metrics
 from psychometrics.selection import select_next_item, update_theta
 from models.item_bank import ITEM_BANK, load_bank
 
@@ -16,10 +16,15 @@ load_dotenv()
 
 app = FastAPI(title="Cerebral iQ Psychometric Engine")
 
-# Supabase Client for Engine Persistance
+# Supabase Auth/DB Configuration
 supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
 supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
-supabase: Client = create_client(supabase_url, supabase_key)
+
+DEFAULT_HEADERS = {
+    "apikey": supabase_key,
+    "Authorization": f"Bearer {supabase_key}",
+    "Content-Type": "application/json"
+}
 
 # Configure CORS for Next.js 15
 app.add_middleware(
@@ -46,24 +51,28 @@ def read_root():
 
 @app.post("/assessment/start")
 async def start_assessment():
-    # Ensure bank is loaded
     if not ITEM_BANK:
         load_bank()
         
-    # Select first item (usually something neutral index around theta=0)
     next_idx = select_next_item(0.0, [])
     
-    # Create persistent session in Supabase
+    # Store persistent session via PostgREST
     try:
-        response = supabase.table("sessions").insert({
+        url = f"{supabase_url}/rest/v1/sessions"
+        payload = {
             "theta": 0.0,
             "history": [],
             "responses": [],
             "latencies": []
-        }).execute()
-        
-        session_data = response.data[0]
-        session_id = session_data["id"]
+        }
+        with httpx.Client() as client:
+            response = client.post(url, headers=DEFAULT_HEADERS, json=payload)
+            response.raise_for_status()
+            
+            # Fetch the generated ID (using Prefer: return=representation)
+            res_full = client.post(url, headers={**DEFAULT_HEADERS, "Prefer": "return=representation"}, json=payload)
+            session_data = res_full.json()[0]
+            session_id = session_data["id"]
         
         return {
             "session_id": session_id,
@@ -75,10 +84,13 @@ async def start_assessment():
 
 @app.post("/assessment/submit")
 async def submit_answer(data: AnswerSubmission):
-    # Fetch session to validate/update
+    # Fetch session via PostgREST
     try:
-        session_res = supabase.table("sessions").select("*").eq("id", data.session_id).single().execute()
-        session = session_res.data
+        url = f"{supabase_url}/rest/v1/sessions?id=eq.{data.session_id}"
+        with httpx.Client() as client:
+            session_res = client.get(url, headers=DEFAULT_HEADERS)
+            session_res.raise_for_status()
+            session = session_res.json()[0]
     except Exception:
         raise HTTPException(status_code=404, detail="Session not found")
 
@@ -86,20 +98,24 @@ async def submit_answer(data: AnswerSubmission):
     new_responses = session["responses"] + [data.response]
     new_latencies = session.get("latencies", []) + [data.latency if data.latency is not None else -1.0]
     
-    # Update Theta based on full history
     new_theta = update_theta(new_responses, new_history)
-    
-    # Select next item
     next_idx = select_next_item(new_theta, new_history)
     
-    # Persist update
-    supabase.table("sessions").update({
-        "theta": new_theta,
-        "history": new_history,
-        "responses": new_responses,
-        "latencies": new_latencies,
-        "updated_at": "now()"
-    }).eq("id", data.session_id).execute()
+    # Update persistent session
+    try:
+        update_url = f"{supabase_url}/rest/v1/sessions?id=eq.{data.session_id}"
+        update_payload = {
+            "theta": new_theta,
+            "history": new_history,
+            "responses": new_responses,
+            "latencies": new_latencies,
+            "updated_at": "now()"
+        }
+        with httpx.Client() as client:
+            update_res = client.patch(update_url, headers=DEFAULT_HEADERS, json=update_payload)
+            update_res.raise_for_status()
+    except Exception as e:
+        print(f"[Error] Failed to persist submission: {e}")
     
     if next_idx == -1:
         return {
@@ -117,20 +133,41 @@ async def submit_answer(data: AnswerSubmission):
 
 @app.get("/assessment/finalize/{session_id}/{theta}")
 async def finalize_score(session_id: str, theta: float):
-    # Fetch session for history/context (optional update)
-    # Transform latent trait (theta) to Deviation IQ
+    # Fetch session to get latencies/domains
+    try:
+        url = f"{supabase_url}/rest/v1/sessions?id=eq.{session_id}"
+        with httpx.Client() as client:
+            session_res = client.get(url, headers=DEFAULT_HEADERS)
+            session_res.raise_for_status()
+            session = session_res.json()[0]
+    except Exception:
+        raise HTTPException(status_code=404, detail="Session not found for finalization")
+
+    # Get domains for items in history
+    domains = [ITEM_BANK[idx]["domain"] for idx in session["history"]]
+    
+    # Calculate Gs Metrics [CS-08]
+    gs_metrics = calculate_gs_metrics(session["responses"], session["latencies"], domains)
+    
     iq_data = calculate_deviation_iq(100 + (15 * theta))
     
-    # Save profile results persistently
+    # Add Gs Metrics to final IQ payload
+    iq_data.update(gs_metrics)
+    
+    # Save profile via PostgREST
     try:
-        supabase.table("profiles").insert({
+        url = f"{supabase_url}/rest/v1/profiles"
+        payload = {
             "full_scale_iq": iq_data["iq"],
             "classification": iq_data["classification"],
-            # Simplified subtest scores for demo (in production calculate separately)
-            "gf_score": iq_data["iq"] - 2, 
+            "gf_score": iq_data["iq"] - 2, # Example: deriving sub-scores from theta/domain
+            "gs_score": gs_metrics["gs_score"],
             "gwm_score": iq_data["iq"] + 1,
             "created_at": "now()"
-        }).execute()
+        }
+        with httpx.Client() as client:
+            prof_res = client.post(url, headers=DEFAULT_HEADERS, json=payload)
+            prof_res.raise_for_status()
     except Exception as e:
         print(f"[Warn] Failed to save profile record: {e}")
         

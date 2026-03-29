@@ -7,7 +7,5 @@ catsim
 python-multipart
 python-jose[cryptography]
 passlib[bcrypt]
-supabase
-# Optional but recommended for dev
-python-dotenv
 httpx
+python-dotenv

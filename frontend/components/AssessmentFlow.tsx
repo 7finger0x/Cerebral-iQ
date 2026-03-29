@@ -29,6 +29,9 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
   // High Precision timing for Processing Speed (Gs) domains
   const timer = useHighPrecisionTimer();
 
+  // Reference for the current item start to ensure no race conditions
+  const itemStartTimeRef = React.useRef<number>(0);
+
   // Target length for stable SEM
   const TARGET_ITEMS = 20;
 
@@ -39,10 +42,6 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
       setSessionId(data.session_id);
       setCurrentQuestion(data.first_item);
       setStep('testing');
-      // Start timer if first item is timed
-      if (data.first_item?.domain === 'Gs' || data.first_item?.metadata?.timed) {
-        timer.start();
-      }
     } catch (error) {
       logger.error('Error starting session:', error);
       // Fallback for demo
@@ -61,6 +60,16 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
       setLoading(false);
     }
   };
+
+  // [GS-04] Auto-start timer when item is rendered
+  React.useEffect(() => {
+    if (step === 'testing' && currentQuestion && !loading) {
+      if (currentQuestion.domain === 'Gs' || currentQuestion.metadata?.timed) {
+        timer.start();
+        logger.info(`[Timer] Started precision pulse for ${currentQuestion.id}`);
+      }
+    }
+  }, [currentQuestion?.id, step, loading, timer]);
 
   const handleAnswer = async (responseValue: number) => {
     if (!currentQuestion) return;
@@ -93,11 +102,6 @@ const AssessmentFlow: React.FC<AssessmentFlowProps> = ({ onComplete, onCancel })
       } else {
         setCurrentQuestion(result.next_item);
         if (result.updated_theta) setTheta(result.updated_theta);
-        
-        // Start timer for next question if timed
-        if (result.next_item?.domain === 'Gs' || result.next_item?.metadata?.timed) {
-          timer.start();
-        }
         
         setLoading(false);
       }

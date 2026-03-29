@@ -1,6 +1,6 @@
 import os
 import numpy as np
-from supabase import create_client, Client
+import httpx
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -9,20 +9,26 @@ supabase_url = os.environ.get("NEXT_PUBLIC_SUPABASE_URL")
 supabase_key = os.environ.get("NEXT_PUBLIC_SUPABASE_ANON_KEY")
 
 if not supabase_url or not supabase_key:
-    # Fallback/Error handling
     print("[Error] Supabase env vars missing for backend.")
-
-supabase: Client = create_client(supabase_url, supabase_key)
 
 ITEM_BANK = []
 
 def load_bank():
-    """Fetches all items from Supabase items table."""
+    """Fetches all items from Supabase items table via direct PostgREST API."""
     global ITEM_BANK
     try:
-        response = supabase.table("items").select("*").execute()
-        ITEM_BANK = response.data
-        print(f"[CiQ.Bank] Successfully loaded {len(ITEM_BANK)} items from Supabase vault.")
+        # Construct PostgREST URL
+        url = f"{supabase_url}/rest/v1/items?select=*"
+        headers = {
+            "apikey": supabase_key,
+            "Authorization": f"Bearer {supabase_key}",
+            "Content-Type": "application/json"
+        }
+        with httpx.Client() as client:
+            response = client.get(url, headers=headers)
+            response.raise_for_status()
+            ITEM_BANK = response.json()
+            print(f"[CiQ.Bank] Successfully loaded {len(ITEM_BANK)} items from Supabase vault via httpx.")
     except Exception as e:
         print(f"[Error] Failed to load bank: {e}")
         ITEM_BANK = []
